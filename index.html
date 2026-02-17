@@ -10,56 +10,94 @@ body{
     text-align:center;
 }
 
-/* BOARD */
-.board{
-    display:grid;
-    grid-template-columns: repeat(6,1fr);
-    gap:5px;
+/* ===== MODE ===== */
+.mode-box{
+    margin:10px;
+}
+.mode-btn{
+    padding:6px 14px;
+    margin:4px;
+    border-radius:6px;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+.active{
+    background:gold;
+    color:black;
+}
+
+/* ===== ZERO ===== */
+.zero{
+    width:90%;
+    margin:8px auto;
     padding:10px;
+    background:#27ae60;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ===== COLUMNS ===== */
+.columns{
+    display:flex;
+    justify-content:space-around;
+    padding:10px;
+}
+
+.col{
+    width:30%;
+    background:#111827;
+    border-radius:10px;
+    padding:6px;
+}
+
+.col-title{
+    font-weight:bold;
+    color:gold;
+    margin-bottom:4px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:4px;
 }
 
 .num{
-    padding:10px;
+    padding:8px;
     border-radius:6px;
     font-weight:bold;
     cursor:pointer;
-    background:#1e272e;
 }
 
+/* Roulette colors */
+.red{background:#c0392b;}
+.black{background:#1e272e;}
 .green{background:#27ae60;}
 
-/* BOX CỘT */
-.col-box{
-    width:90%;
-    margin:8px auto;
-    padding:8px;
-    background:#111827;
-    border-radius:8px;
-    text-align:left;
-    font-size:14px;
+/* Highlight AI column */
+.follow{
+    box-shadow:0 0 10px 3px gold inset;
 }
 
 /* BAR */
 .bar-bg{
-    width:100%;
+    width:90%;
     height:14px;
     background:#222;
-    margin-top:5px;
+    margin:6px auto;
     border-radius:10px;
     overflow:hidden;
 }
-
 .bar{
     height:100%;
     width:0%;
     transition:0.3s;
 }
-
-/* Flash khi mạnh */
 .flash{
     animation:flash 0.7s infinite;
 }
-
 @keyframes flash{
     0%{opacity:1;}
     50%{opacity:0.3;}
@@ -67,8 +105,8 @@ body{
 }
 
 .info{
-    margin:8px;
-    font-size:16px;
+    margin:6px;
+    font-size:15px;
     color:gold;
     font-weight:bold;
 }
@@ -79,186 +117,131 @@ body{
     overflow:auto;
 }
 </style></head>
-<body><h3>Roulette Europe AI PRO+</h3><div class="board" id="board"></div><!-- BOX CỘT --><div class="col-box">
-Cột 1: <span id="c1">0 (0%)</span>
-<div class="bar-bg"><div class="bar" id="b1"></div></div>
-</div><div class="col-box">
-Cột 2: <span id="c2">0 (0%)</span>
+<body><h3>Roulette Europe AI PRO+</h3><div class="mode-box">
+<button class="mode-btn active" id="riskBtn" onclick="setMode('risk')">Risk</button>
+<button class="mode-btn" id="safeBtn" onclick="setMode('safe')">Safe</button>
+</div><div class="zero" onclick="addNumber(0)">0</div><div class="columns">
+<div class="col" id="col1"><div class="col-title">Cột 1</div><div class="grid" id="g1"></div></div>
+<div class="col" id="col2"><div class="col-title">Cột 2</div><div class="grid" id="g2"></div></div>
+<div class="col" id="col3"><div class="col-title">Cột 3</div><div class="grid" id="g3"></div></div>
+</div><div class="bar-bg"><div class="bar" id="b1"></div></div>
 <div class="bar-bg"><div class="bar" id="b2"></div></div>
-</div><div class="col-box">
-Cột 3: <span id="c3">0 (0%)</span>
-<div class="bar-bg"><div class="bar" id="b3"></div></div>
-</div><div class="info" id="strong">Cột mạnh: -</div>
-<div class="info" id="pattern">AI: Chưa có dữ liệu</div>
-<div class="info" id="safe">SAFE: -</div><div class="history" id="history"></div><script>
+<div class="bar-bg"><div class="bar" id="b3"></div></div><div class="info" id="ai">AI: -</div>
+<div class="info" id="winrate">Win rate: 0%</div>
+<div class="history" id="history"></div><script>
 let history=[];
 let columns=[];
-let count=[0,0,0,0];
+let mode="risk";
+let win=0, lose=0;
+let lastPredict=[];
+
+const redNums=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+function setMode(m){
+    mode=m;
+    riskBtn.classList.remove("active");
+    safeBtn.classList.remove("active");
+    if(m==="risk") riskBtn.classList.add("active");
+    else safeBtn.classList.add("active");
+}
 
 function getColumn(n){
-    if(n===0) return 0;
     let r=n%3;
     if(r===1) return 1;
     if(r===2) return 2;
     return 3;
 }
 
-function getColor(p){
-    if(p>=50) return "lime";
-    if(p>=30) return "gold";
-    return "red";
+function getColorClass(n){
+    if(n===0) return "green";
+    return redNums.includes(n)?"red":"black";
 }
 
-function setBar(id,p){
-    let bar=document.getElementById(id);
-    bar.style.width=p+"%";
-    bar.style.background=getColor(p);
-
-    if(p>=50) bar.classList.add("flash");
-    else bar.classList.remove("flash");
+function createBoard(){
+    for(let i=1;i<=36;i++){
+        let col=getColumn(i);
+        let d=document.createElement("div");
+        d.className="num "+getColorClass(i);
+        d.innerText=i;
+        d.onclick=()=>addNumber(i);
+        document.getElementById("g"+col).appendChild(d);
+    }
 }
+createBoard();
 
 function updateBars(){
-    let total=count[1]+count[2]+count[3];
+    let recent=columns.slice(-15);
+    let c=[0,0,0,0];
+    recent.forEach(v=>c[v]++);
 
-    let p1=total?(count[1]/total*100):0;
-    let p2=total?(count[2]/total*100):0;
-    let p3=total?(count[3]/total*100):0;
-
-    // Update text box
-    document.getElementById("c1").innerText=
-        count[1]+" ("+p1.toFixed(1)+"%)";
-    document.getElementById("c2").innerText=
-        count[2]+" ("+p2.toFixed(1)+"%)";
-    document.getElementById("c3").innerText=
-        count[3]+" ("+p3.toFixed(1)+"%)";
+    let total=recent.length||1;
+    let p1=c[1]/total*100;
+    let p2=c[2]/total*100;
+    let p3=c[3]/total*100;
 
     setBar("b1",p1);
     setBar("b2",p2);
     setBar("b3",p3);
 
     let max=Math.max(p1,p2,p3);
-    let strong="-";
+    let follow = max===p1?1:max===p2?2:3;
 
-    if(max>0){
-        if(max===p1) strong="Cột 1 ("+max.toFixed(1)+"%)";
-        else if(max===p2) strong="Cột 2 ("+max.toFixed(1)+"%)";
-        else strong="Cột 3 ("+max.toFixed(1)+"%)";
+    highlightColumn(follow);
+    makePrediction(follow,p1,p2,p3);
+}
+
+function setBar(id,p){
+    let bar=document.getElementById(id);
+    bar.style.width=p+"%";
+    bar.style.background=p>50?"lime":p>30?"gold":"red";
+    if(p>50) bar.classList.add("flash");
+    else bar.classList.remove("flash");
+}
+
+function highlightColumn(c){
+    [1,2,3].forEach(i=>{
+        document.getElementById("col"+i).classList.remove("follow");
+    });
+    document.getElementById("col"+c).classList.add("follow");
+}
+
+function makePrediction(strong,p1,p2,p3){
+    let predict=[];
+
+    if(mode==="risk"){
+        predict=[strong];
+        document.getElementById("ai").innerText="AI Risk → Cột "+strong;
+    }else{
+        let arr=[1,2,3];
+        arr.splice(arr.indexOf(strong),1);
+        predict=arr;
+        document.getElementById("ai").innerText="AI Safe → Cột "+predict.join(" + ");
     }
 
-    document.getElementById("strong").innerText="Cột mạnh: "+strong;
-}
-
-function detectPattern(){
-    let len=columns.length;
-    if(len<4){
-        document.getElementById("pattern").innerText="AI: Chưa đủ dữ liệu";
-        return;
-    }
-
-    let a=columns[len-1];
-    let b=columns[len-2];
-    let c=columns[len-3];
-    let d=columns[len-4];
-
-    if(a===b && b===c){
-        document.getElementById("pattern").innerText=
-        "AI: Cầu bệt → Theo Cột "+a;
-        return;
-    }
-
-    if(a===c && b===d && a!==b){
-        document.getElementById("pattern").innerText=
-        "AI: Zigzag → Theo Cột "+b;
-        return;
-    }
-
-    if(a===b){
-        document.getElementById("pattern").innerText=
-        "AI: Cầu chạy → Cột "+a;
-        return;
-    }
-
-    let min=Math.min(count[1],count[2],count[3]);
-    let col=min===count[1]?1:min===count[2]?2:3;
-
-    document.getElementById("pattern").innerText=
-    "AI: Cầu đảo → Cột "+col;
-}
-
-function suggestSafe(){
-let total = count[1] + count[2] + count[3];
-
-if(total < 3){
-    document.getElementById("safe").innerText =
-        "SAFE: Chưa đủ dữ liệu";
-    return;
-}
-
-let p1 = count[1]/total*100;
-let p2 = count[2]/total*100;
-let p3 = count[3]/total*100;
-
-let min = Math.min(p1, p2, p3);
-let text = "";
-
-if(min === p1){
-    text = "SAFE → Đánh Cột 2 + Cột 3";
-}
-else if(min === p2){
-    text = "SAFE → Đánh Cột 1 + Cột 3";
-}
-else{
-    text = "SAFE → Đánh Cột 1 + Cột 2";
-}
-
-document.getElementById("safe").innerText = text;
-}
-
-function resetAll(){
-    history=[];
-    columns=[];
-    count=[0,0,0,0];
-
-    document.getElementById("history").innerText="Reset (ra 0)";
-    document.getElementById("pattern").innerText="AI: Reset";
-    document.getElementById("strong").innerText="Cột mạnh: -";
-    document.getElementById("safe").innerText="SAFE: -";
-
-    updateBars();
+    lastPredict=predict;
 }
 
 function addNumber(n){
-    if(n===0){
-        resetAll();
-        return;
-    }
+    if(n===0) return; // không reset
 
     history.push(n);
     let col=getColumn(n);
     columns.push(col);
-    count[col]++;
 
-    document.getElementById("history").innerText=
-        "Lịch sử: "+history.join(" - ");
+    // Win rate
+    if(lastPredict.length){
+        if(lastPredict.includes(col)) win++;
+        else lose++;
+    }
 
     updateBars();
-    detectPattern();
-    suggestSafe();
-}
 
-function createBoard(){
-    let board=document.getElementById("board");
-    for(let i=0;i<=36;i++){
-        let d=document.createElement("div");
-        d.className="num";
-        if(i===0) d.classList.add("green");
-        d.innerText=i;
-        d.onclick=()=>addNumber(i);
-        board.appendChild(d);
-    }
-}
+    let total=win+lose;
+    let rate=total?(win/total*100).toFixed(1):0;
+    document.getElementById("winrate").innerText="Win rate: "+rate+"%";
 
-createBoard();
+    document.getElementById("history").innerText=
+        "15 gần nhất: "+history.slice(-15).join(" - ");
+}
 </script></body>
 </html>
