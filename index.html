@@ -40,16 +40,18 @@ body{
 
 /* ===== COLUMNS ===== */
 .columns{
-    display:flex;
-    justify-content:space-around;
-    padding:10px;
+display:flex;
+flex-direction:column;   /* xếp dọc */
+gap:10px;
+padding:10px;
 }
 
 .col{
-    width:30%;
-    background:#111827;
-    border-radius:10px;
-    padding:6px;
+width:90%;               /* full ngang */
+margin:auto;
+background:#111827;
+border-radius:10px;
+padding:8px;
 }
 
 .col-title{
@@ -59,9 +61,9 @@ body{
 }
 
 .grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:4px;
+display:grid;
+grid-template-columns:repeat(12,1fr);
+gap:4px;
 }
 
 .num{
