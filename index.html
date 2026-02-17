@@ -185,6 +185,33 @@ function scanEffect(callback){
 
 // ===== THÊM KẾT QUẢ =====
 function addNumber(n){
+
+    // ===== Nếu ra 0 → RESET =====
+    if(n === 0){
+        history = [];
+        win = 0;
+        total = 0;
+        predictCols = [];
+
+        // Reset thanh %
+        document.getElementById("b1").style.width = "0%";
+        document.getElementById("b2").style.width = "0%";
+        document.getElementById("b3").style.width = "0%";
+
+        // Bỏ highlight cột
+        document.getElementById("col1").classList.remove("active-col");
+        document.getElementById("col2").classList.remove("active-col");
+        document.getElementById("col3").classList.remove("active-col");
+
+        // Reset text
+        document.getElementById("ai").innerText = "AI: Reset (ra 0)";
+        document.getElementById("winrate").innerText = "Win rate: 0%";
+        document.getElementById("history").innerText = "";
+
+        return;
+    }
+
+    // ===== Thêm kết quả bình thường =====
     history.unshift(n);
     if(history.length>maxHistory) history.pop();
 
