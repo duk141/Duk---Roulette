@@ -1,7 +1,7 @@
 <!DOCTYPE html><html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roulette Column AI VIP</title><style>
+<title>Roulette AI PRO+</title><style>
 body{
     margin:0;
     background:#0b0f1a;
@@ -10,9 +10,10 @@ body{
     text-align:center;
 }
 
+/* BOARD */
 .board{
     display:grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6,1fr);
     gap:5px;
     padding:10px;
 }
@@ -27,6 +28,7 @@ body{
 
 .green{background:#27ae60;}
 
+/* BAR */
 .bar-bg{
     width:90%;
     height:14px;
@@ -42,9 +44,20 @@ body{
     transition:0.3s;
 }
 
-.suggest{
-    margin:12px;
-    font-size:18px;
+/* Nhấp nháy khi >50% */
+.flash{
+    animation:flash 0.7s infinite;
+}
+
+@keyframes flash{
+    0%{opacity:1;}
+    50%{opacity:0.3;}
+    100%{opacity:1;}
+}
+
+.info{
+    margin:8px;
+    font-size:16px;
     color:gold;
     font-weight:bold;
 }
@@ -53,20 +66,18 @@ body{
     font-size:12px;
     max-height:80px;
     overflow:auto;
-    padding:5px;
 }
 </style></head>
-<body><h2>Roulette Europe AI VIP</h2><div class="board" id="board"></div><div>
+<body><h3>Roulette Europe AI PRO+</h3><div class="board" id="board"></div><div>
 Cột 1<div class="bar-bg"><div class="bar" id="b1"></div></div>
 Cột 2<div class="bar-bg"><div class="bar" id="b2"></div></div>
 Cột 3<div class="bar-bg"><div class="bar" id="b3"></div></div>
-</div><div class="suggest" id="suggest">Chưa có dữ liệu</div>
+</div><div class="info" id="strong">Cột mạnh: -</div>
+<div class="info" id="pattern">AI: Chưa có dữ liệu</div>
 <div class="history" id="history"></div><script>
 let history=[];
 let columns=[];
-let colCount=[0,0,0,0];
-let locked=false;
-let lockedPercent=[0,0,0,0];
+let count=[0,0,0,0];
 
 function getColumn(n){
     if(n===0) return 0;
@@ -76,67 +87,94 @@ function getColumn(n){
     return 3;
 }
 
-function getColor(percent){
-    if(percent >= 45) return "lime";
-    if(percent >= 30) return "gold";
+function getColor(p){
+    if(p>=50) return "lime";
+    if(p>=30) return "gold";
     return "red";
+}
+
+function setBar(id,p){
+    let bar=document.getElementById(id);
+    bar.style.width=p+"%";
+    bar.style.background=getColor(p);
+
+    // Nhấp nháy khi >50%
+    if(p>=50) bar.classList.add("flash");
+    else bar.classList.remove("flash");
+}
+
+function updateBars(){
+    let total=count[1]+count[2]+count[3];
+    let p1=total?(count[1]/total*100):0;
+    let p2=total?(count[2]/total*100):0;
+    let p3=total?(count[3]/total*100):0;
+
+    setBar("b1",p1);
+    setBar("b2",p2);
+    setBar("b3",p3);
+
+    // Cột mạnh nhất
+    let max=Math.max(p1,p2,p3);
+    let strong="-";
+    if(max>0){
+        if(max===p1) strong="Cột 1 ("+max.toFixed(1)+"%)";
+        else if(max===p2) strong="Cột 2 ("+max.toFixed(1)+"%)";
+        else strong="Cột 3 ("+max.toFixed(1)+"%)";
+    }
+    document.getElementById("strong").innerText="Cột mạnh: "+strong;
+}
+
+function detectPattern(){
+    let len=columns.length;
+    if(len<4){
+        document.getElementById("pattern").innerText="AI: Chưa đủ dữ liệu";
+        return;
+    }
+
+    let a=columns[len-1];
+    let b=columns[len-2];
+    let c=columns[len-3];
+    let d=columns[len-4];
+
+    // Cầu bệt
+    if(a===b && b===c){
+        document.getElementById("pattern").innerText=
+        "AI: Cầu bệt → Theo Cột "+a;
+        return;
+    }
+
+    // Zigzag
+    if(a===c && b===d && a!==b){
+        document.getElementById("pattern").innerText=
+        "AI: Zigzag → Theo Cột "+b;
+        return;
+    }
+
+    // Cầu chạy cơ bản
+    if(a===b){
+        document.getElementById("pattern").innerText=
+        "AI: Cầu chạy → Cột "+a;
+        return;
+    }
+
+    // Cầu đảo
+    let min=Math.min(count[1],count[2],count[3]);
+    let col=min===count[1]?1:min===count[2]?2:3;
+    document.getElementById("pattern").innerText=
+    "AI: Cầu đảo → Cột "+col;
 }
 
 function resetAll(){
     history=[];
     columns=[];
-    colCount=[0,0,0,0];
-    locked=false;
-    document.getElementById("history").innerText="Đã reset (ra 0)";
-    document.getElementById("suggest").innerText="Reset";
+    count=[0,0,0,0];
+    document.getElementById("history").innerText="Reset (ra 0)";
+    document.getElementById("pattern").innerText="AI: Reset";
+    document.getElementById("strong").innerText="Cột mạnh: -";
     updateBars();
 }
 
-function updateBars(){
-    let total=colCount[1]+colCount[2]+colCount[3];
-
-    let p1=total?(colCount[1]/total*100):0;
-    let p2=total?(colCount[2]/total*100):0;
-    let p3=total?(colCount[3]/total*100):0;
-
-    if(!locked){
-        lockedPercent=[0,p1,p2,p3];
-    }
-
-    setBar("b1",lockedPercent[1]);
-    setBar("b2",lockedPercent[2]);
-    setBar("b3",lockedPercent[3]);
-}
-
-function setBar(id,percent){
-    let bar=document.getElementById(id);
-    bar.style.width=percent+"%";
-    bar.style.background=getColor(percent);
-}
-
-function AI(){
-    if(columns.length<2){
-        return "Chưa đủ dữ liệu";
-    }
-
-    let last=columns[columns.length-1];
-    let prev=columns[columns.length-2];
-
-    // Cầu chạy
-    if(last===prev){
-        return "Cầu chạy → Cột "+last;
-    }
-
-    // Cầu đảo (cột ít nhất)
-    let min=Math.min(colCount[1],colCount[2],colCount[3]);
-    if(colCount[1]===min) return "Cầu đảo → Cột 1";
-    if(colCount[2]===min) return "Cầu đảo → Cột 2";
-    return "Cầu đảo → Cột 3";
-}
-
 function addNumber(n){
-    locked=false;
-
     if(n===0){
         resetAll();
         return;
@@ -145,31 +183,27 @@ function addNumber(n){
     history.push(n);
     let col=getColumn(n);
     columns.push(col);
-    colCount[col]++;
+    count[col]++;
 
     document.getElementById("history").innerText=
         "Lịch sử: "+history.join(" - ");
 
     updateBars();
-
-    let suggest=AI();
-    document.getElementById("suggest").innerText=suggest;
-
-    locked=true;
+    detectPattern();
 }
 
 function createBoard(){
     let board=document.getElementById("board");
     for(let i=0;i<=36;i++){
-        let div=document.createElement("div");
-        div.className="num";
-        if(i===0) div.classList.add("green");
-        div.innerText=i;
-        div.onclick=()=>addNumber(i);
-        board.appendChild(div);
+        let d=document.createElement("div");
+        d.className="num";
+        if(i===0) d.classList.add("green");
+        d.innerText=i;
+        d.onclick=()=>addNumber(i);
+        board.appendChild(d);
     }
 }
 
 createBoard();
 </script></body>
-                                                                     </html>
+</html>
