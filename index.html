@@ -1,103 +1,273 @@
 <!DOCTYPE html><html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roulette AI Board</title><style>
+<title>Roulette AI PRO+</title><style>
 body{
-    background:#062a2a;
+    margin:0;
+    background:#0b0f1a;
     font-family:Arial;
     color:white;
     text-align:center;
 }
 
-/* ===== BOARD ===== */
-.board{
-    width:320px;
-    margin:20px auto;
-    border-radius:18px;
-    overflow:hidden;
-    border:2px solid rgba(255,255,255,0.3);
+/* ===== MODE ===== */
+.mode-box{
+    margin:10px;
+}
+.mode-btn{
+    padding:6px 14px;
+    margin:4px;
+    border-radius:6px;
+    border:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+.active{
+    background:gold;
+    color:black;
 }
 
 /* ===== ZERO ===== */
 .zero{
-    background:#3a944f;
-    padding:14px;
-    font-size:28px;
+    width:90%;
+    margin:8px auto;
+    padding:10px;
+    background:#27ae60;
+    border-radius:8px;
     font-weight:bold;
+    cursor:pointer;
 }
 
-/* ===== GRID ===== */
+/* ===== COLUMNS ===== */
+.columns{
+display:flex;
+flex-direction:column;   /* xếp dọc */
+gap:10px;
+padding:10px;
+}
+
+.col{
+width:90%;               /* full ngang */
+margin:auto;
+background:#111827;
+border-radius:10px;
+padding:8px;
+}
+
+.col-title{
+    font-weight:bold;
+    color:gold;
+    margin-bottom:4px;
+}
+
 .grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
+display:grid;
+grid-template-columns:1fr;   /* chỉ 1 cột */
+gap:4px;
 }
 
-.cell{
-    padding:16px 0;
-    font-size:20px;
-    border:1px solid rgba(255,255,255,0.15);
+.num{
+    padding:8px;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-/* Roulette Colors */
-.red{ background:#c62828; }
-.black{ background:#111; }
+/* Roulette colors */
+.red{background:#c0392b;}
+.black{background:#1e272e;}
+.green{background:#27ae60;}
 
-/* ===== COLUMN LABEL ===== */
-.labels{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    background:#0f4c4c;
+/* Highlight AI column */
+.follow{
+    box-shadow:
+        0 0 20px gold,
+        0 0 40px gold,
+        inset 0 0 15px gold;
+    animation: glowAI 1s infinite;
 }
 
-.label{
-    padding:14px 0;
-    border:1px solid rgba(255,255,255,0.15);
+@keyframes glowAI{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.03);}
+    100%{transform:scale(1);}
+}
+
+/* BAR */
+.bar-bg{
+    width:90%;
+    height:14px;
+    background:#222;
+    margin:6px auto;
+    border-radius:10px;
+    overflow:hidden;
+}
+.bar{
+    height:100%;
+    width:0%;
+    transition:0.3s;
+}
+.flash{
+    animation:flash 0.7s infinite;
+}
+@keyframes flash{
+    0%{opacity:1;}
+    50%{opacity:0.3;}
+    100%{opacity:1;}
+}
+
+.info{
+    margin:6px;
+    font-size:15px;
+    color:gold;
     font-weight:bold;
 }
 
-/* ===== AI GLOW ===== */
-.ai{
-    box-shadow:0 0 18px #00ffcc inset, 0 0 18px #00ffcc;
-    position:relative;
-    z-index:2;
+.history{
+    font-size:12px;
+    max-height:80px;
+    overflow:auto;
 }
 </style></head>
-<body><h3>Roulette Europe AI</h3><div class="board"><div class="zero">0</div>
+<body><h3>Roulette Europe AI PRO+</h3><div class="mode-box">
+<button class="mode-btn active" id="riskBtn" onclick="setMode('risk')">Risk</button>
+<button class="mode-btn" id="safeBtn" onclick="setMode('safe')">Safe</button>
+</div><div class="zero" onclick="addNumber(0)">0</div><div class="columns">
+<div class="col" id="col1"><div class="col-title">Cột 1</div><div class="grid" id="g1"></div></div>
+<div class="col" id="col2"><div class="col-title">Cột 2</div><div class="grid" id="g2"></div></div>
+<div class="col" id="col3"><div class="col-title">Cột 3</div><div class="grid" id="g3"></div></div>
+</div><div class="bar-bg"><div class="bar" id="b1"></div></div>
+<div class="bar-bg"><div class="bar" id="b2"></div></div>
+<div class="bar-bg"><div class="bar" id="b3"></div></div><div class="info" id="ai">AI: -</div>
+<div class="info" id="winrate">Win rate: 0%</div>
+<div class="history" id="history"></div><script>
+let history=[];
+let columns=[];
+let mode="risk";
+let win=0, lose=0;
+let lastPredict=[];
 
-<div class="grid" id="grid"></div>
+const redNums=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
-<div class="labels">
-    <div class="label" id="col1">Dãy 1</div>
-    <div class="label" id="col2">Dãy 2</div>
-    <div class="label" id="col3">Dãy 3</div>
-</div>
-
-</div><script>
-// ===== Roulette red numbers =====
-const redNumbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-
-const grid = document.getElementById("grid");
-
-// ===== Create board 1–36 =====
-for(let i=1;i<=36;i++){
-    const div = document.createElement("div");
-    div.className = "cell " + (redNumbers.includes(i) ? "red" : "black");
-    div.innerText = i;
-    grid.appendChild(div);
+function setMode(m){
+    mode=m;
+    riskBtn.classList.remove("active");
+    safeBtn.classList.remove("active");
+    if(m==="risk") riskBtn.classList.add("active");
+    else safeBtn.classList.add("active");
 }
 
-// ===== AI chọn cột (demo) =====
-let aiColumn = 2; // 1 / 2 / 3
+function getColumn(n){
+    let r=n%3;
+    if(r===1) return 1;
+    if(r===2) return 2;
+    return 3;
+}
 
-document.getElementById("col"+aiColumn).classList.add("ai");
+function getColorClass(n){
+    if(n===0) return "green";
+    return redNums.includes(n)?"red":"black";
+}
 
-// Highlight toàn bộ cột
-const cells = document.querySelectorAll(".cell");
-cells.forEach((cell,index)=>{
-    let col = (index % 3) + 1;
-    if(col === aiColumn){
-        cell.classList.add("ai");
+function createBoard(){
+
+    // Cột 1: 1,4,7...
+    for(let i=1;i<=36;i+=3){
+        createNumber(i,1);
     }
-});
+
+    // Cột 2: 2,5,8...
+    for(let i=2;i<=36;i+=3){
+        createNumber(i,2);
+    }
+
+    // Cột 3: 3,6,9...
+    for(let i=3;i<=36;i+=3){
+        createNumber(i,3);
+    }
+}
+
+function createNumber(num,col){
+    let d=document.createElement("div");
+    d.className="num "+getColorClass(num);
+    d.innerText=num;
+    d.onclick=()=>addNumber(num);
+    document.getElementById("g"+col).appendChild(d);
+}
+
+function updateBars(){
+    let recent=columns.slice(-15);
+    let c=[0,0,0,0];
+    recent.forEach(v=>c[v]++);
+
+    let total=recent.length||1;
+    let p1=c[1]/total*100;
+    let p2=c[2]/total*100;
+    let p3=c[3]/total*100;
+
+    setBar("b1",p1);
+    setBar("b2",p2);
+    setBar("b3",p3);
+
+    let max=Math.max(p1,p2,p3);
+    let follow = max===p1?1:max===p2?2:3;
+
+    highlightColumn(follow);
+    makePrediction(follow,p1,p2,p3);
+}
+
+function setBar(id,p){
+    let bar=document.getElementById(id);
+    bar.style.width=p+"%";
+    bar.style.background=p>50?"lime":p>30?"gold":"red";
+    if(p>50) bar.classList.add("flash");
+    else bar.classList.remove("flash");
+}
+
+function highlightColumn(c){
+    [1,2,3].forEach(i=>{
+        document.getElementById("col"+i).classList.remove("follow");
+    });
+    document.getElementById("col"+c).classList.add("follow");
+}
+
+function makePrediction(strong,p1,p2,p3){
+    let predict=[];
+
+    if(mode==="risk"){
+        predict=[strong];
+        document.getElementById("ai").innerText="AI Risk → Cột "+strong;
+    }else{
+        let arr=[1,2,3];
+        arr.splice(arr.indexOf(strong),1);
+        predict=arr;
+        document.getElementById("ai").innerText="AI Safe → Cột "+predict.join(" + ");
+    }
+
+    lastPredict=predict;
+}
+
+function addNumber(n){
+    if(n===0) return; // không reset
+
+    history.push(n);
+    let col=getColumn(n);
+    columns.push(col);
+
+    // Win rate
+    if(lastPredict.length){
+        if(lastPredict.includes(col)) win++;
+        else lose++;
+    }
+
+    updateBars();
+
+    let total=win+lose;
+    let rate=total?(win/total*100).toFixed(1):0;
+    document.getElementById("winrate").innerText="Win rate: "+rate+"%";
+
+    document.getElementById("history").innerText=
+        "15 gần nhất: "+history.slice(-15).join(" - ");
+}
 </script></body>
 </html>
