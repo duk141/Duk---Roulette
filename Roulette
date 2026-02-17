@@ -1,0 +1,175 @@
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roulette Column AI VIP</title><style>
+body{
+    margin:0;
+    background:#0b0f1a;
+    font-family:Arial;
+    color:white;
+    text-align:center;
+}
+
+.board{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap:5px;
+    padding:10px;
+}
+
+.num{
+    padding:10px;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#1e272e;
+}
+
+.green{background:#27ae60;}
+
+.bar-bg{
+    width:90%;
+    height:14px;
+    background:#222;
+    margin:6px auto;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.bar{
+    height:100%;
+    width:0%;
+    transition:0.3s;
+}
+
+.suggest{
+    margin:12px;
+    font-size:18px;
+    color:gold;
+    font-weight:bold;
+}
+
+.history{
+    font-size:12px;
+    max-height:80px;
+    overflow:auto;
+    padding:5px;
+}
+</style></head>
+<body><h2>Roulette Europe AI VIP</h2><div class="board" id="board"></div><div>
+Cột 1<div class="bar-bg"><div class="bar" id="b1"></div></div>
+Cột 2<div class="bar-bg"><div class="bar" id="b2"></div></div>
+Cột 3<div class="bar-bg"><div class="bar" id="b3"></div></div>
+</div><div class="suggest" id="suggest">Chưa có dữ liệu</div>
+<div class="history" id="history"></div><script>
+let history=[];
+let columns=[];
+let colCount=[0,0,0,0];
+let locked=false;
+let lockedPercent=[0,0,0,0];
+
+function getColumn(n){
+    if(n===0) return 0;
+    let r=n%3;
+    if(r===1) return 1;
+    if(r===2) return 2;
+    return 3;
+}
+
+function getColor(percent){
+    if(percent >= 45) return "lime";
+    if(percent >= 30) return "gold";
+    return "red";
+}
+
+function resetAll(){
+    history=[];
+    columns=[];
+    colCount=[0,0,0,0];
+    locked=false;
+    document.getElementById("history").innerText="Đã reset (ra 0)";
+    document.getElementById("suggest").innerText="Reset";
+    updateBars();
+}
+
+function updateBars(){
+    let total=colCount[1]+colCount[2]+colCount[3];
+
+    let p1=total?(colCount[1]/total*100):0;
+    let p2=total?(colCount[2]/total*100):0;
+    let p3=total?(colCount[3]/total*100):0;
+
+    if(!locked){
+        lockedPercent=[0,p1,p2,p3];
+    }
+
+    setBar("b1",lockedPercent[1]);
+    setBar("b2",lockedPercent[2]);
+    setBar("b3",lockedPercent[3]);
+}
+
+function setBar(id,percent){
+    let bar=document.getElementById(id);
+    bar.style.width=percent+"%";
+    bar.style.background=getColor(percent);
+}
+
+function AI(){
+    if(columns.length<2){
+        return "Chưa đủ dữ liệu";
+    }
+
+    let last=columns[columns.length-1];
+    let prev=columns[columns.length-2];
+
+    // Cầu chạy
+    if(last===prev){
+        return "Cầu chạy → Cột "+last;
+    }
+
+    // Cầu đảo (cột ít nhất)
+    let min=Math.min(colCount[1],colCount[2],colCount[3]);
+    if(colCount[1]===min) return "Cầu đảo → Cột 1";
+    if(colCount[2]===min) return "Cầu đảo → Cột 2";
+    return "Cầu đảo → Cột 3";
+}
+
+function addNumber(n){
+    locked=false;
+
+    if(n===0){
+        resetAll();
+        return;
+    }
+
+    history.push(n);
+    let col=getColumn(n);
+    columns.push(col);
+    colCount[col]++;
+
+    document.getElementById("history").innerText=
+        "Lịch sử: "+history.join(" - ");
+
+    updateBars();
+
+    let suggest=AI();
+    document.getElementById("suggest").innerText=suggest;
+
+    locked=true;
+}
+
+function createBoard(){
+    let board=document.getElementById("board");
+    for(let i=0;i<=36;i++){
+        let div=document.createElement("div");
+        div.className="num";
+        if(i===0) div.classList.add("green");
+        div.innerText=i;
+        div.onclick=()=>addNumber(i);
+        board.appendChild(div);
+    }
+}
+
+createBoard();
+</script></body>
+</html>
