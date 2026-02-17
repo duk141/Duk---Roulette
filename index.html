@@ -74,6 +74,7 @@ Cột 2<div class="bar-bg"><div class="bar" id="b2"></div></div>
 Cột 3<div class="bar-bg"><div class="bar" id="b3"></div></div>
 </div><div class="info" id="strong">Cột mạnh: -</div>
 <div class="info" id="pattern">AI: Chưa có dữ liệu</div>
+<div class="info" id="safe">SAFE: -</div>
 <div class="history" id="history"></div><script>
 let history=[];
 let columns=[];
@@ -164,6 +165,36 @@ function detectPattern(){
     "AI: Cầu đảo → Cột "+col;
 }
 
+function suggestSafe(){
+let total = count[1] + count[2] + count[3];
+
+if(total < 3){
+    document.getElementById("safe").innerText =
+        "SAFE: Chưa đủ dữ liệu";
+    return;
+}
+
+let p1 = count[1]/total*100;
+let p2 = count[2]/total*100;
+let p3 = count[3]/total*100;
+
+let min = Math.min(p1, p2, p3);
+let text = "";
+
+if(min === p1){
+    text = "SAFE → Đánh Cột 2 + Cột 3";
+}
+else if(min === p2){
+    text = "SAFE → Đánh Cột 1 + Cột 3";
+}
+else{
+    text = "SAFE → Đánh Cột 1 + Cột 2";
+}
+
+document.getElementById("safe").innerText = text;
+
+}
+
 function resetAll(){
     history=[];
     columns=[];
@@ -190,6 +221,7 @@ function addNumber(n){
 
     updateBars();
     detectPattern();
+    suggestSafe();
 }
 
 function createBoard(){
