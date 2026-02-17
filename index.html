@@ -1,134 +1,92 @@
 <!DOCTYPE html><html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roulette AI PRO+</title><style>
+<title>Roulette AI PRO+</title>
+<style>
 body{
-    margin:0;
-    background:#0b0f1a;
-    font-family:Arial;
-    color:white;
+    background:#0b0b0b;
+    color:#fff;
     text-align:center;
+    font-family:Arial;
 }
 
-/* ===== MODE ===== */
-.mode-box{
-    margin:10px;
-}
+.mode-box{margin:10px;}
 .mode-btn{
-    padding:6px 14px;
-    margin:4px;
-    border-radius:6px;
+    padding:8px 15px;
+    margin:5px;
+    background:#222;
+    color:#fff;
     border:none;
-    font-weight:bold;
-    cursor:pointer;
+    border-radius:5px;
 }
-.active{
-    background:gold;
-    color:black;
+.mode-btn.active{
+    background:#00c3ff;
 }
 
-/* ===== ZERO ===== */
-.zero{
-    width:90%;
-    margin:8px auto;
-    padding:10px;
-    background:#27ae60;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-/* ===== COLUMNS ===== */
 .columns{
-display:flex;
-flex-direction:column;   /* xếp dọc */
-gap:10px;
-padding:10px;
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
 }
 
 .col{
-width:90%;               /* full ngang */
-margin:auto;
-background:#111827;
-border-radius:10px;
-padding:8px;
+    margin:5px;
+    padding:5px;
+    border:1px solid #333;
 }
 
 .col-title{
-    font-weight:bold;
-    color:gold;
-    margin-bottom:4px;
+    margin-bottom:5px;
 }
 
 .grid{
-display:grid;
-grid-template-columns:1fr;   /* chỉ 1 cột */
-gap:4px;
+    display:grid;
+    grid-template-columns:repeat(3,40px);
 }
 
 .num{
-    padding:8px;
-    border-radius:6px;
+    width:40px;
+    height:40px;
+    line-height:40px;
+    margin:2px;
+    cursor:pointer;
+    border-radius:4px;
     font-weight:bold;
+}
+
+.zero{
+    width:60px;
+    margin:auto;
+    padding:10px;
+    background:green;
+    border-radius:6px;
     cursor:pointer;
 }
 
-/* Roulette colors */
-.red{background:#c0392b;}
-.black{background:#1e272e;}
-.green{background:#27ae60;}
-
-/* Highlight AI column */
-.follow{
-    box-shadow:
-        0 0 20px gold,
-        0 0 40px gold,
-        inset 0 0 15px gold;
-    animation: glowAI 1s infinite;
+.active-col{
+    border:2px solid #00ffcc;
+    box-shadow:0 0 10px #00ffcc;
 }
 
-@keyframes glowAI{
-    0%{transform:scale(1);}
-    50%{transform:scale(1.03);}
-    100%{transform:scale(1);}
-}
-
-/* BAR */
 .bar-bg{
-    width:90%;
-    height:14px;
+    width:80%;
+    height:10px;
     background:#222;
-    margin:6px auto;
-    border-radius:10px;
-    overflow:hidden;
-}
-.bar{
-    height:100%;
-    width:0%;
-    transition:0.3s;
-}
-.flash{
-    animation:flash 0.7s infinite;
-}
-@keyframes flash{
-    0%{opacity:1;}
-    50%{opacity:0.3;}
-    100%{opacity:1;}
+    margin:5px auto;
 }
 
-.info{
-    margin:6px;
-    font-size:15px;
-    color:gold;
-    font-weight:bold;
+.bar{
+    height:10px;
+    width:0%;
+    background:#00ffcc;
 }
 
 .history{
-    font-size:12px;
-    max-height:80px;
-    overflow:auto;
+    margin-top:10px;
+    font-size:14px;
 }
-</style></head>
+</style>
+</head>
 <body><h3>Roulette Europe AI PRO+</h3><div class="mode-box">
 <button class="mode-btn active" id="riskBtn" onclick="setMode('risk')">Risk</button>
 <button class="mode-btn" id="safeBtn" onclick="setMode('safe')">Safe</button>
@@ -140,136 +98,147 @@ gap:4px;
 <div class="bar-bg"><div class="bar" id="b2"></div></div>
 <div class="bar-bg"><div class="bar" id="b3"></div></div><div class="info" id="ai">AI: -</div>
 <div class="info" id="winrate">Win rate: 0%</div>
-<div class="history" id="history"></div><script>
-let history=[];
-let columns=[];
-let mode="risk";
-let win=0, lose=0;
-let lastPredict=[];
+<div class="history" id="history"></div>
 
-const redNums=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+<script>
+// ===== CẤU HÌNH =====
+let history = [];
+let maxHistory = 15;
+let mode = "risk";
+let lastPrediction = null;
+let win = 0;
+let total = 0;
 
+// ===== MÀU ROULETTE CHUẨN =====
+const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+// ===== CHẾ ĐỘ =====
 function setMode(m){
-    mode=m;
-    riskBtn.classList.remove("active");
-    safeBtn.classList.remove("active");
-    if(m==="risk") riskBtn.classList.add("active");
-    else safeBtn.classList.add("active");
-}
+    mode = m;
+    document.getElementById("riskBtn").classList.remove("active");
+    document.getElementById("safeBtn").classList.remove("active");
 
-function getColumn(n){
-    let r=n%3;
-    if(r===1) return 1;
-    if(r===2) return 2;
-    return 3;
-}
-
-function getColorClass(n){
-    if(n===0) return "green";
-    return redNums.includes(n)?"red":"black";
-}
-
-function createBoard(){
-
-    // Cột 1: 1,4,7...
-    for(let i=1;i<=36;i+=3){
-        createNumber(i,1);
-    }
-
-    // Cột 2: 2,5,8...
-    for(let i=2;i<=36;i+=3){
-        createNumber(i,2);
-    }
-
-    // Cột 3: 3,6,9...
-    for(let i=3;i<=36;i+=3){
-        createNumber(i,3);
-    }
-}
-
-function createNumber(num,col){
-    let d=document.createElement("div");
-    d.className="num "+getColorClass(num);
-    d.innerText=num;
-    d.onclick=()=>addNumber(num);
-    document.getElementById("g"+col).appendChild(d);
-}
-
-function updateBars(){
-    let recent=columns.slice(-15);
-    let c=[0,0,0,0];
-    recent.forEach(v=>c[v]++);
-
-    let total=recent.length||1;
-    let p1=c[1]/total*100;
-    let p2=c[2]/total*100;
-    let p3=c[3]/total*100;
-
-    setBar("b1",p1);
-    setBar("b2",p2);
-    setBar("b3",p3);
-
-    let max=Math.max(p1,p2,p3);
-    let follow = max===p1?1:max===p2?2:3;
-
-    highlightColumn(follow);
-    makePrediction(follow,p1,p2,p3);
-}
-
-function setBar(id,p){
-    let bar=document.getElementById(id);
-    bar.style.width=p+"%";
-    bar.style.background=p>50?"lime":p>30?"gold":"red";
-    if(p>50) bar.classList.add("flash");
-    else bar.classList.remove("flash");
-}
-
-function highlightColumn(c){
-    [1,2,3].forEach(i=>{
-        document.getElementById("col"+i).classList.remove("follow");
-    });
-    document.getElementById("col"+c).classList.add("follow");
-}
-
-function makePrediction(strong,p1,p2,p3){
-    let predict=[];
-
-    if(mode==="risk"){
-        predict=[strong];
-        document.getElementById("ai").innerText="AI Risk → Cột "+strong;
+    if(m=="risk"){
+        document.getElementById("riskBtn").classList.add("active");
     }else{
-        let arr=[1,2,3];
-        arr.splice(arr.indexOf(strong),1);
-        predict=arr;
-        document.getElementById("ai").innerText="AI Safe → Cột "+predict.join(" + ");
+        document.getElementById("safeBtn").classList.add("active");
     }
-
-    lastPredict=predict;
 }
 
+// ===== TẠO BẢNG SỐ =====
+function createGrid(){
+    for(let i=1;i<=36;i++){
+        let btn = document.createElement("div");
+        btn.className="num";
+        btn.innerText=i;
+        btn.onclick=()=>addNumber(i);
+
+        // Màu đỏ đen
+        if(redNums.includes(i)){
+            btn.style.background="#c0392b";
+        }else{
+            btn.style.background="#111";
+        }
+
+        // Chia cột giống bàn thật
+        if(i%3==1){
+            document.getElementById("g1").appendChild(btn);
+        }else if(i%3==2){
+            document.getElementById("g2").appendChild(btn);
+        }else{
+            document.getElementById("g3").appendChild(btn);
+        }
+    }
+}
+createGrid();
+
+// ===== THÊM KẾT QUẢ =====
 function addNumber(n){
-    if(n===0) return; // không reset
+    history.unshift(n);
+    if(history.length>maxHistory) history.pop();
 
-    history.push(n);
-    let col=getColumn(n);
-    columns.push(col);
+    updateHistory();
+    analyze(n);
+}
 
-    // Win rate
-    if(lastPredict.length){
-        if(lastPredict.includes(col)) win++;
-        else lose++;
+// ===== HIỂN THỊ LỊCH SỬ =====
+function updateHistory(){
+    document.getElementById("history").innerText =
+        history.join("  ");
+}
+
+// ===== PHÂN TÍCH AI =====
+function analyze(lastNumber){
+
+    // ===== TÍNH CỘT =====
+    let col = [0,0,0];
+
+    history.forEach(n=>{
+        if(n==0) return;
+        if(n%3==1) col[0]++;
+        else if(n%3==2) col[1]++;
+        else col[2]++;
+    });
+
+    let percent = col.map(v=>{
+        if(history.length==0) return 0;
+        return Math.round(v/history.length*100);
+    });
+
+    // ===== RISK / SAFE =====
+    let predictIndex;
+
+    if(mode=="risk"){
+        // Theo cột mạnh nhất
+        predictIndex = percent.indexOf(Math.max(...percent));
+    }else{
+        // Theo cột yếu nhất
+        predictIndex = percent.indexOf(Math.min(...percent));
     }
 
-    updateBars();
+    lastPrediction = predictIndex+1;
 
-    let total=win+lose;
-    let rate=total?(win/total*100).toFixed(1):0;
-    document.getElementById("winrate").innerText="Win rate: "+rate+"%";
+    // ===== HIGHLIGHT CỘT =====
+    document.getElementById("col1").classList.remove("active-col");
+    document.getElementById("col2").classList.remove("active-col");
+    document.getElementById("col3").classList.remove("active-col");
 
-    document.getElementById("history").innerText=
-        "15 gần nhất: "+history.slice(-15).join(" - ");
+    document.getElementById("col"+(predictIndex+1))
+        .classList.add("active-col");
+
+    // ===== THANH % =====
+    document.getElementById("b1").style.width = percent[0]+"%";
+    document.getElementById("b2").style.width = percent[1]+"%";
+    document.getElementById("b3").style.width = percent[2]+"%";
+
+    // ===== AI TEXT =====
+    document.getElementById("ai").innerText =
+        "AI theo: Cột "+lastPrediction+
+        " ("+percent[predictIndex]+"%)";
+
+    // ===== WIN RATE =====
+    if(total>0){
+        let wr = Math.round(win/total*100);
+        document.getElementById("winrate").innerText =
+            "Win rate: "+wr+"%";
+    }
+
+    // ===== KIỂM TRA THẮNG =====
+    if(total>0){
+        let realCol = 0;
+        if(lastNumber!=0){
+            realCol = lastNumber%3;
+            if(realCol==0) realCol=3;
+        }
+
+        if(realCol == lastPrediction){
+            win++;
+        }
+    }
+
+    total++;
 }
-createBoard();
+</script>
 
-</script></body>
+</body>
 </html>
