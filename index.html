@@ -85,6 +85,14 @@ body{
     margin-top:10px;
     font-size:14px;
 }
+.scan{
+    animation: scanGlow 0.8s infinite alternate;
+}
+
+@keyframes scanGlow{
+    from{ box-shadow:0 0 5px #00ffcc; }
+    to{ box-shadow:0 0 25px #00ffcc; }
+}
 </style>
 </head>
 <body><h3>Roulette Europe AI PRO+</h3><div class="mode-box">
@@ -108,6 +116,8 @@ let mode = "risk";
 let lastPrediction = null;
 let win = 0;
 let total = 0;
+let doubleMode = true; // bật đánh 2 cột
+let predictCols = []; // lưu các cột AI theo
 
 // ===== MÀU ROULETTE CHUẨN =====
 const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
@@ -152,6 +162,27 @@ function createGrid(){
 }
 createGrid();
 
+function scanEffect(callback){
+    let cols = ["col1","col2","col3"];
+    let i = 0;
+    let loop = setInterval(()=>{
+        cols.forEach(c=>{
+            document.getElementById(c).classList.remove("scan");
+        });
+
+        document.getElementById(cols[i]).classList.add("scan");
+        i++;
+
+        if(i>=6){
+            clearInterval(loop);
+            cols.forEach(c=>{
+                document.getElementById(c).classList.remove("scan");
+            });
+            callback();
+        }
+    },120);
+}
+
 // ===== THÊM KẾT QUẢ =====
 function addNumber(n){
     history.unshift(n);
@@ -182,29 +213,35 @@ function analyze(lastNumber){
 
     let percent = col.map(v=>{
         if(history.length==0) return 0;
-        return Math.round(v/history.length*100);
+        let totalSpin = history.filter(x=>x!=0).length;
+if(totalSpin==0) return 0;
+return Math.round(v/totalSpin*100);
     });
 
     // ===== RISK / SAFE =====
-    let predictIndex;
+    let sorted = percent
+    .map((v,i)=>({v,i}))
+    .sort((a,b)=> mode=="risk" ? b.v-a.v : a.v-b.v);
 
-    if(mode=="risk"){
-        // Theo cột mạnh nhất
-        predictIndex = percent.indexOf(Math.max(...percent));
-    }else{
-        // Theo cột yếu nhất
-        predictIndex = percent.indexOf(Math.min(...percent));
-    }
+if(doubleMode){
+    // chọn 2 cột
+    predictCols = [sorted[0].i+1, sorted[1].i+1];
+}else{
+    predictCols = [sorted[0].i+1];
+}
 
-    lastPrediction = predictIndex+1;
+lastPrediction = predictCols;
 
     // ===== HIGHLIGHT CỘT =====
+scanEffect(()=>{
     document.getElementById("col1").classList.remove("active-col");
     document.getElementById("col2").classList.remove("active-col");
     document.getElementById("col3").classList.remove("active-col");
 
-    document.getElementById("col"+(predictIndex+1))
-        .classList.add("active-col");
+    predictCols.forEach(c=>{
+        document.getElementById("col"+c).classList.add("active-col");
+    });
+});
 
     // ===== THANH % =====
     document.getElementById("b1").style.width = percent[0]+"%";
@@ -213,8 +250,7 @@ function analyze(lastNumber){
 
     // ===== AI TEXT =====
     document.getElementById("ai").innerText =
-        "AI theo: Cột "+lastPrediction+
-        " ("+percent[predictIndex]+"%)";
+    "AI theo: Cột " + predictCols.join(" + ");
 
     // ===== WIN RATE =====
     if(total>0){
@@ -231,7 +267,7 @@ function analyze(lastNumber){
             if(realCol==0) realCol=3;
         }
 
-        if(realCol == lastPrediction){
+        if(lastPrediction.includes(realCol)){
             win++;
         }
     }
