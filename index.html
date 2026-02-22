@@ -158,7 +158,7 @@ body{
 
 <!-- ===== BOX AI ===== -->
 <div class="box ai-box">
-    <div id="ai">AI: -</div>
+    <div id="ai">AI đang phân tích...</div>
     <div id="winrate">Win rate: 0%</div>
 </div>
 
@@ -176,6 +176,19 @@ let win = 0;
 let total = 0;
 let doubleMode = true; // bật đánh 2 cột
 let predictCols = []; // lưu các cột AI theo
+let lastAI = "";
+let lockedPercent = {c1:0,c2:0,c3:0};
+let lockState = false;
+let lose = 0;
+let lastSignal = "";
+let lockReady = false;
+
+function getColumn(num){
+    if(num==0) return 0;
+    if(num%3==1) return 1;
+    if(num%3==2) return 2;
+    return 3;
+}
 
 // ===== MÀU ROULETTE CHUẨN =====
 const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
@@ -245,29 +258,33 @@ function scanEffect(callback){
 function addNumber(n){
 
     // ===== Nếu ra 0 → RESET =====
-    if(n === 0){
-        history = [];
-        win = 0;
-        total = 0;
-        predictCols = [];
+if(n === 0){
+    history = [];
+    win = 0;
+    lose = 0;
+    total = 0;
+    predictCols = [];
+    lastPrediction = null;
 
-        // Reset thanh %
-        document.getElementById("b1").style.width = "0%";
-        document.getElementById("b2").style.width = "0%";
-        document.getElementById("b3").style.width = "0%";
+    // reset khóa %
+    lockedPercent = {c1:0,c2:0,c3:0};
+    lockReady = false;
+    lastSignal = "";
 
-        // Bỏ highlight cột
-        document.getElementById("col1").classList.remove("active-col");
-        document.getElementById("col2").classList.remove("active-col");
-        document.getElementById("col3").classList.remove("active-col");
+    document.getElementById("b1").style.width = "0%";
+    document.getElementById("b2").style.width = "0%";
+    document.getElementById("b3").style.width = "0%";
 
-        // Reset text
-        document.getElementById("ai").innerText = "AI: Reset (ra 0)";
-        document.getElementById("winrate").innerText = "Win rate: 0%";
-        document.getElementById("history").innerText = "";
+    document.getElementById("col1").classList.remove("active-col");
+    document.getElementById("col2").classList.remove("active-col");
+    document.getElementById("col3").classList.remove("active-col");
 
-        return;
-    }
+    document.getElementById("ai").innerText = "⛔ Reset (ra 0)";
+    document.getElementById("winrate").innerText = "Win rate: 0%";
+    document.getElementById("history").innerText = "";
+
+    return;
+}
 
     // ===== Thêm kết quả bình thường =====
     history.unshift(n);
@@ -286,34 +303,89 @@ function updateHistory(){
 // ===== PHÂN TÍCH AI =====
 function analyze(lastNumber){
 
-    // ===== TÍNH CỘT =====
-    let col = [0,0,0];
-
-    history.forEach(n=>{
-        if(n==0) return;
-        if(n%3==1) col[0]++;
-        else if(n%3==2) col[1]++;
-        else col[2]++;
-    });
-
-    let percent = col.map(v=>{
-        if(history.length==0) return 0;
-        let totalSpin = history.filter(x=>x!=0).length;
-if(totalSpin==0) return 0;
-return Math.round(v/totalSpin*100);
-    });
-
-    // ===== RISK / SAFE =====
-    let sorted = percent
-    .map((v,i)=>({v,i}))
-    .sort((a,b)=> mode=="risk" ? b.v-a.v : a.v-b.v);
-
-if(doubleMode){
-    // chọn 2 cột
-    predictCols = [sorted[0].i+1, sorted[1].i+1];
-}else{
-    predictCols = [sorted[0].i+1];
+// ===== CHỈ PHÂN TÍCH KHI ĐỦ DỮ LIỆU =====
+if(history.length < 10){
+    document.getElementById("ai").innerText = "AI đang thu thập dữ liệu...";
+    return;
 }
+
+// ===== Đếm 15 ván gần nhất =====
+let recent = history.slice(0,15);
+let c1=0,c2=0,c3=0;
+
+recent.forEach(n=>{
+    if(n%3==1) c1++;
+    else if(n%3==2) c2++;
+    else if(n%3==0) c3++;
+});
+
+let p1 = Math.round(c1/recent.length*100);
+let p2 = Math.round(c2/recent.length*100);
+let p3 = Math.round(c3/recent.length*100);
+
+// ===== KHÓA % CHỐNG NHẢY =====
+let diff = Math.max(
+    Math.abs(p1-lockedPercent.c1),
+    Math.abs(p2-lockedPercent.c2),
+    Math.abs(p3-lockedPercent.c3)
+);
+
+if(!lockReady || diff > 8){
+    lockedPercent = {c1:p1,c2:p2,c3:p3};
+    lockReady = true;
+}
+
+p1 = lockedPercent.c1;
+p2 = lockedPercent.c2;
+p3 = lockedPercent.c3;
+
+    let percent = [p1, p2, p3];
+
+// ===== Nhận biết bệt =====
+let last5 = recent.slice(0,5).map(getColumn);
+let isBiet = last5.every(v => v === last5[0]);
+
+// ===== Nhận biết gãy =====
+let last3 = recent.slice(0,3).map(getColumn);
+let zigzag = new Set(last3).size >= 2;
+
+let max = Math.max(percent[0],percent[1],percent[2]);
+let min = Math.min(percent[0],percent[1],percent[2]);
+
+predictCols = [];
+let signal = "";
+
+// 🔥 Risk mạnh (bệt thật)
+if(isBiet && max >= 45){
+    let col = percent.indexOf(max) + 1;
+    predictCols = [col];
+    signal = "🔥 Risk mạnh";
+    lastSignal = "risk";
+}
+
+// ⚠ Safe yếu (2 cột yếu)
+else if(max >= 38 && (max-min) >= 10){
+    let arr = [
+        {c:1,v:percent[0]},
+        {c:2,v:percent[1]},
+        {c:3,v:percent[2]}
+    ];
+
+    arr.sort((a,b)=>a.v-b.v);
+    predictCols = [arr[0].c, arr[1].c];
+
+    signal = "⚠ Safe yếu";
+    lastSignal = "safe";
+}
+
+// ⛔ No Bet (gãy hoặc nhiễu)
+else{
+    predictCols = [];
+    signal = "⛔ NO BET";
+    lastSignal = "";
+}
+
+lastPrediction = predictCols;
 
 lastPrediction = predictCols;
 
@@ -330,8 +402,15 @@ scanEffect(()=>{
 
     // ===== THANH % =====
     setBar("b1", percent[0]);
-setBar("b2", percent[1]);
-setBar("b3", percent[2]);
+    setBar("b2", percent[1]);
+    setBar("b3", percent[2]);
+
+if(predictCols.length > 0){
+    document.getElementById("ai").innerText =
+        signal + " → Cột " + predictCols.join(" + ");
+}else{
+    document.getElementById("ai").innerText = signal;
+}
 
 function setBar(id, p){
     let bar = document.getElementById(id);
@@ -348,31 +427,20 @@ function setBar(id, p){
     }
 }
 
-    // ===== AI TEXT =====
-    document.getElementById("ai").innerText =
-    "AI theo: Cột " + predictCols.join(" + ");
-
     // ===== WIN RATE =====
-    if(total>0){
-        let wr = Math.round(win/total*100);
-        document.getElementById("winrate").innerText =
-            "Win rate: "+wr+"%";
+    if(lastPrediction.length > 0){
+    let realCol = getColumn(lastNumber);
+
+    if(lastPrediction.includes(realCol)){
+        win++;
+    }else{
+        lose++;
     }
+}
 
-    // ===== KIỂM TRA THẮNG =====
-    if(total>0){
-        let realCol = 0;
-        if(lastNumber!=0){
-            realCol = lastNumber%3;
-            if(realCol==0) realCol=3;
-        }
-
-        if(lastPrediction.includes(realCol)){
-            win++;
-        }
-    }
-
-    total++;
+let wr = total>0 ? Math.round(win/total*100) : 0;
+document.getElementById("winrate").innerText =
+"Win rate: " + wr + "%";
 }
 </script>
 
