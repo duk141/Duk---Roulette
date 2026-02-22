@@ -1,7 +1,7 @@
 <!DOCTYPE html><html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roulette AI PRO+</title>
+<title>Roulette PRO - DUK</title>
 <style>
 body{
     background:#0b0b0b;
@@ -141,7 +141,7 @@ body{
 }
 </style>
 </head>
-<body><h3>Roulette Europe AI PRO+</h3><div class="mode-box">
+<body><h3>Roulette PRO - DUK</h3><div class="mode-box">
 <button class="mode-btn active" id="riskBtn" onclick="setMode('risk')">Risk</button>
 <button class="mode-btn" id="safeBtn" onclick="setMode('safe')">Safe</button>
 </div><div class="zero" onclick="addNumber(0)">0</div><div class="columns">
@@ -158,8 +158,8 @@ body{
 
 <!-- ===== BOX AI ===== -->
 <div class="box ai-box">
-    <div id="ai">AI đang phân tích...</div>
-    <div id="winrate">Win rate: 0%</div>
+    <div id="ai">DUK - Đang phân tích...</div>
+    <div id="winrate">TỶ LỆ THẮNG: 0%</div>
 </div>
 
 <!-- ===== BOX LỊCH SỬ ===== -->
@@ -310,7 +310,7 @@ if(history.length < 10){
 }
 
 // ===== Đếm 15 ván gần nhất =====
-let recent = history.slice(0,15);
+let recent = history.slice(0,10);
 let c1=0,c2=0,c3=0;
 
 recent.forEach(n=>{
@@ -330,9 +330,19 @@ let diff = Math.max(
     Math.abs(p3-lockedPercent.c3)
 );
 
-if(!lockReady || diff > 8){
+// Chỉ khóa khi Risk mạnh
+if(lastSignal === "risk"){
+    if(!lockReady || diff > 8){
+        lockedPercent = {c1:p1,c2:p2,c3:p3};
+        lockReady = true;
+    }
+
+    p1 = lockedPercent.c1;
+    p2 = lockedPercent.c2;
+    p3 = lockedPercent.c3;
+}else{
+    // Safe hoặc NoBet → không khóa
     lockedPercent = {c1:p1,c2:p2,c3:p3};
-    lockReady = true;
 }
 
 p1 = lockedPercent.c1;
@@ -359,7 +369,7 @@ let signal = "";
 if(isBiet && max >= 45){
     let col = percent.indexOf(max) + 1;
     predictCols = [col];
-    signal = "🔥 Risk mạnh";
+    signal = "🔥 Risk CỘT MẠNH";
     lastSignal = "risk";
 }
 
@@ -374,18 +384,16 @@ else if(max >= 38 && (max-min) >= 10){
     arr.sort((a,b)=>a.v-b.v);
     predictCols = [arr[0].c, arr[1].c];
 
-    signal = "⚠ Safe yếu";
+    signal = "⚠ Safe CỘT YẾU";
     lastSignal = "safe";
 }
 
-// ⛔ No Bet (gãy hoặc nhiễu)
+// ⛔ KHÔNG NÊN CƯỢC (gãy hoặc nhiễu)
 else{
     predictCols = [];
     signal = "⛔ NO BET";
     lastSignal = "";
 }
-
-lastPrediction = predictCols;
 
 lastPrediction = predictCols;
 
@@ -427,8 +435,11 @@ function setBar(id, p){
     }
 }
 
-    // ===== WIN RATE =====
-    if(lastPrediction.length > 0){
+// ===== WIN RATE =====
+if(lastPrediction.length > 0){
+
+    total++;   // <<< THIẾU DÒNG NÀY
+
     let realCol = getColumn(lastNumber);
 
     if(lastPrediction.includes(realCol)){
@@ -440,7 +451,7 @@ function setBar(id, p){
 
 let wr = total>0 ? Math.round(win/total*100) : 0;
 document.getElementById("winrate").innerText =
-"Win rate: " + wr + "%";
+"TỶ LỆ THẮNG: " + wr + "%";
 }
 </script>
 
