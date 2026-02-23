@@ -1,333 +1,79 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
+
 <meta charset="UTF-8">
-<title>ROULETTE AI GOD MODE</title>
+<title>Roulette Predictor Pro</title>
 
-<style>
+<link rel="stylesheet" href="style.css">
 
-body{
-background:#063;
-color:white;
-font-family:Arial;
-text-align:center;
-}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-h1{color:gold;}
-
-.container{
-display:flex;
-justify-content:center;
-gap:20px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(3,90px);
-gap:6px;
-}
-
-.num{
-padding:18px;
-background:black;
-border-radius:6px;
-cursor:pointer;
-font-size:18px;
-}
-
-.num:hover{background:red;}
-
-.columns{
-display:flex;
-flex-direction:column;
-gap:6px;
-}
-
-.col{
-background:#222;
-padding:15px;
-border-radius:6px;
-}
-
-.win{
-background:gold !important;
-color:black;
-}
-
-.lose{
-background:red !important;
-}
-
-button{
-padding:12px;
-margin:5px;
-font-weight:bold;
-background:gold;
-border:none;
-cursor:pointer;
-}
-
-.histNum{
-width:40px;
-height:40px;
-line-height:40px;
-border-radius:5px;
-font-weight:bold;
-}
-
-.c1{background:#2196F3;}
-.c2{background:#FF9800;}
-.c3{background:#E91E63;}
-.zero{background:green;}
-
-</style>
 </head>
 
 <body>
 
-<h1>ROULETTE AI GOD MODE</h1>
+<h1>Roulette Predictor Pro</h1>
 
-<h3>Chọn số vừa ra</h3>
+<div class="box">
+
+<input type="number" id="numberInput" placeholder="Nhập số 0-36">
+
+<button onclick="addNumber()">Nhập</button>
+
+</div>
+
 
 <div class="container">
 
-<div class="grid" id="grid"></div>
+<div class="col">
 
-<div class="columns">
+<h2>Cột 1</h2>
+<p id="p1">0%</p>
 
-<div class="col" id="col1">COLUMN 1</div>
-<div class="col" id="col2">COLUMN 2</div>
-<div class="col" id="col3">COLUMN 3</div>
+</div>
+
+<div class="col">
+
+<h2>Cột 2</h2>
+<p id="p2">0%</p>
+
+</div>
+
+<div class="col">
+
+<h2>Cột 3</h2>
+<p id="p3">0%</p>
 
 </div>
 
 </div>
 
-<button onclick="predict()">AI GOD Predict</button>
 
-<button onclick="reset()">Reset</button>
+<div class="box">
 
-<button onclick="undo()">Undo</button>
+<h2 id="predict"></h2>
 
-<h2 id="result"></h2>
-
-<h3>Lịch sử gần nhất</h3>
-
-<div id="historyGrid"
-style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
 </div>
 
-<h3>Lịch sử dạng số</h3>
 
-<div id="historyText" style="
-background:#111;
-padding:10px;
-margin:10px;
-border-radius:5px;
-color:gold;
-font-size:18px;
-word-wrap:break-word;
-"></div>
+<div class="box">
 
-<script>
+<h2>Lịch sử</h2>
 
-var history = JSON.parse(localStorage.getItem("god")) || []
+<ul id="history"></ul>
 
-var col1=[1,4,7,10,13,16,19,22,25,28,31,34]
-var col2=[2,5,8,11,14,17,20,23,26,29,32,35]
-var col3=[3,6,9,12,15,18,21,24,27,30,33,36]
+</div>
 
 
-function save(){
+<div class="box">
 
-localStorage.setItem("god",JSON.stringify(history))
+<canvas id="chart"></canvas>
 
-}
+</div>
 
 
-function getCol(n){
-
-if(col1.includes(n)) return 1
-if(col2.includes(n)) return 2
-if(col3.includes(n)) return 3
-return 0
-
-}
-
-
-function createGrid(){
-
-var g=document.getElementById("grid")
-
-g.innerHTML=""
-
-for(let i=1;i<=36;i++){
-
-let d=document.createElement("div")
-
-d.className="num"
-
-d.innerHTML=i
-
-d.onclick=function(){
-
-history.push(i)
-
-save()
-
-updateAll()
-
-}
-
-g.appendChild(d)
-
-}
-
-}
-
-
-
-function updateHistoryGrid(){
-
-var grid=document.getElementById("historyGrid")
-
-grid.innerHTML=""
-
-history.slice(-20).reverse().forEach(n=>{
-
-var d=document.createElement("div")
-
-d.className="histNum"
-
-if(col1.includes(n)) d.classList.add("c1")
-else if(col2.includes(n)) d.classList.add("c2")
-else d.classList.add("c3")
-
-d.innerHTML=n
-
-grid.appendChild(d)
-
-})
-
-}
-
-
-
-function updateHistoryText(){
-
-var text=document.getElementById("historyText")
-
-if(history.length==0){
-
-text.innerHTML="Chưa có dữ liệu"
-
-return
-
-}
-
-text.innerHTML=history.slice().reverse().join(" ")
-
-}
-
-
-
-function predict(){
-
-if(history.length==0){
-
-alert("Chưa có dữ liệu")
-
-return
-
-}
-
-var score=[0,0,0,0]
-
-history.forEach(n=>score[getCol(n)]++)
-
-history.slice(-12).forEach(n=>score[getCol(n)]+=2)
-
-history.slice(-6).forEach(n=>score[getCol(n)]+=3)
-
-
-var data=[
-
-{col:1,score:score[1]},
-{col:2,score:score[2]},
-{col:3,score:score[3]}
-
-]
-
-
-data.sort((a,b)=>b.score-a.score)
-
-
-document.getElementById("result").innerHTML=
-
-"ĐÁNH: COLUMN "+data[0].col+" & COLUMN "+data[1].col+
-"<br>TRÁNH: COLUMN "+data[2].col
-
-
-highlight(data[0].col,data[2].col)
-
-}
-
-
-
-function highlight(win,lose){
-
-document.getElementById("col1").classList.remove("win","lose")
-document.getElementById("col2").classList.remove("win","lose")
-document.getElementById("col3").classList.remove("win","lose")
-
-document.getElementById("col"+win).classList.add("win")
-document.getElementById("col"+lose).classList.add("lose")
-
-}
-
-
-
-function undo(){
-
-history.pop()
-
-save()
-
-updateAll()
-
-}
-
-
-
-function reset(){
-
-history=[]
-
-save()
-
-updateAll()
-
-document.getElementById("result").innerHTML=""
-
-}
-
-
-
-function updateAll(){
-
-updateHistoryGrid()
-
-updateHistoryText()
-
-}
-
-
-
-createGrid()
-
-updateAll()
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
