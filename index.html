@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ROULETTE AI GOD MODE PRO</title>
+<title>ROULETTE AI GOD MODE CASINO</title>
 
 <style>
 
@@ -17,12 +17,19 @@ h1{
 color:gold;
 }
 
+.container{
+
+display:flex;
+justify-content:center;
+gap:20px;
+
+}
+
 .grid{
 
 display:grid;
-grid-template-columns:repeat(3,80px);
+grid-template-columns:repeat(3,70px);
 gap:5px;
-justify-content:center;
 
 }
 
@@ -30,14 +37,33 @@ justify-content:center;
 
 background:black;
 padding:15px;
-border-radius:5px;
 cursor:pointer;
+border-radius:5px;
 
 }
 
 .zero{
 
 background:green;
+width:215px;
+margin:auto;
+margin-bottom:5px;
+
+}
+
+.columns{
+
+display:flex;
+flex-direction:column;
+gap:5px;
+
+}
+
+.col{
+
+background:#222;
+padding:15px;
+border-radius:5px;
 
 }
 
@@ -57,7 +83,7 @@ background:red !important;
 button{
 
 padding:10px;
-margin:5px;
+margin:10px;
 background:gold;
 border:none;
 
@@ -69,31 +95,39 @@ border:none;
 
 <body>
 
-<h1>ROULETTE AI GOD MODE PRO</h1>
+<h1>ROULETTE AI GOD MODE</h1>
 
-<div class="num zero" onclick="add(0)">0</div>
+<div class="zero num" onclick="add(0)">0</div>
 
-<br>
+<div class="container">
 
 <div class="grid" id="grid"></div>
 
-<br>
+<div class="columns">
+
+<div class="col" id="col1">COLUMN 1</div>
+
+<div class="col" id="col2">COLUMN 2</div>
+
+<div class="col" id="col3">COLUMN 3</div>
+
+</div>
+
+</div>
 
 <button onclick="predict()">AI Predict</button>
-
-<button onclick="undo()">Undo</button>
 
 <button onclick="reset()">Reset</button>
 
 <h2 id="result"></h2>
 
+<h3 id="hotcold"></h3>
+
 <h3 id="confidence"></h3>
 
 <h3 id="history"></h3>
 
-
 <script>
-
 
 var history=JSON.parse(localStorage.getItem("roulette"))||[]
 
@@ -148,17 +182,6 @@ update()
 }
 
 
-function undo(){
-
-history.pop()
-
-save()
-
-update()
-
-}
-
-
 function update(){
 
 document.getElementById("history").innerHTML=
@@ -166,7 +189,6 @@ document.getElementById("history").innerHTML=
 "History: "+history.join(",")
 
 }
-
 
 update()
 
@@ -182,13 +204,10 @@ return 0
 }
 
 
-
 function predict(){
 
 var score=[0,0,0,0]
 
-
-// frequency
 
 history.forEach(n=>{
 
@@ -197,62 +216,20 @@ score[getCol(n)]+=1
 })
 
 
-// trend
+history.slice(-10).forEach(n=>{
 
-history.slice(-15).forEach(n=>{
-
-score[getCol(n)]+=4
+score[getCol(n)]+=3
 
 })
 
 
-// streak anti trap
-
-var last=getCol(history[history.length-1])
-
-var streak=0
-
-for(let i=history.length-1;i>=0;i--){
-
-if(getCol(history[i])==last)
-
-streak++
-
-else break
-
-}
-
-
-if(streak>=4)
-
-score[last]-=streak*3
-
-
-
-// cold boost
-
-var min=Math.min(score[1],score[2],score[3])
-
-score[score.indexOf(min)]+=6
-
-
-
-var total=score[1]+score[2]+score[3]
-
-
-var p1=Math.round(score[1]/total*100)
-var p2=Math.round(score[2]/total*100)
-var p3=Math.round(score[3]/total*100)
-
-
-
 var data=[
 
-{col:1,score:score[1],p:p1},
+{col:1,score:score[1]},
 
-{col:2,score:score[2],p:p2},
+{col:2,score:score[2]},
 
-{col:3,score:score[3],p:p3}
+{col:3,score:score[3]}
 
 ]
 
@@ -260,69 +237,52 @@ var data=[
 data.sort((a,b)=>b.score-a.score)
 
 
+var hot=data[0].col
+
+var cold=data[2].col
+
+
+var total=score[1]+score[2]+score[3]
+
+var confidence=Math.round(data[0].score/total*100)
+
 
 document.getElementById("result").innerHTML=
 
-"ĐÁNH: Cột "+data[0].col+" & "+data[1].col+
+"ĐÁNH: Column "+data[0].col+" & "+data[1].col+
 
-"<br>TRÁNH: Cột "+data[2].col
+"<br>TRÁNH: Column "+data[2].col
 
+
+document.getElementById("hotcold").innerHTML=
+
+"🔥 HOT: Column "+hot+
+
+" | ❄️ COLD: Column "+cold
 
 
 document.getElementById("confidence").innerHTML=
 
-"Confidence: "+data[0].p+"%"
+"Confidence: "+confidence+"%"
 
 
-highlight(data[0].col,data[2].col)
-
+highlight(hot,cold)
 
 }
-
 
 
 function highlight(win,lose){
 
-document.querySelectorAll(".num").forEach(el=>{
-
-var n=parseInt(el.innerHTML)
-
-el.classList.remove("win")
-
-el.classList.remove("lose")
+document.getElementById("col1").classList.remove("win","lose")
+document.getElementById("col2").classList.remove("win","lose")
+document.getElementById("col3").classList.remove("win","lose")
 
 
-if(col1.includes(n)){
+document.getElementById("col"+win).classList.add("win")
 
-if(win==1) el.classList.add("win")
-
-if(lose==1) el.classList.add("lose")
+document.getElementById("col"+lose).classList.add("lose")
 
 }
-
-
-if(col2.includes(n)){
-
-if(win==2) el.classList.add("win")
-
-if(lose==2) el.classList.add("lose")
-
-}
-
-
-if(col3.includes(n)){
-
-if(win==3) el.classList.add("win")
-
-if(lose==3) el.classList.add("lose")
-
-}
-
-
-})
-
-}
-
 
 
 function reset(){
@@ -331,12 +291,9 @@ history=[]
 
 save()
 
-update()
-
 location.reload()
 
 }
-
 
 </script>
 
