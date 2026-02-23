@@ -13,9 +13,7 @@ font-family:Arial;
 text-align:center;
 }
 
-h1{
-color:gold;
-}
+h1{color:gold;}
 
 .container{
 display:flex;
@@ -37,9 +35,7 @@ cursor:pointer;
 font-size:18px;
 }
 
-.num:hover{
-background:red;
-}
+.num:hover{background:red;}
 
 .columns{
 display:flex;
@@ -71,25 +67,12 @@ border:none;
 cursor:pointer;
 }
 
-.box{
-margin-top:20px;
-font-size:22px;
-}
-
-.bar{
-height:20px;
-background:red;
-margin:5px;
-}
-
 .histNum{
-
 width:40px;
 height:40px;
 line-height:40px;
 border-radius:5px;
 font-weight:bold;
-
 }
 
 .c1{background:#2196F3;}
@@ -98,7 +81,6 @@ font-weight:bold;
 .zero{background:green;}
 
 </style>
-
 </head>
 
 <body>
@@ -114,35 +96,26 @@ font-weight:bold;
 <div class="columns">
 
 <div class="col" id="col1">COLUMN 1</div>
-
 <div class="col" id="col2">COLUMN 2</div>
-
 <div class="col" id="col3">COLUMN 3</div>
 
 </div>
 
 </div>
 
-<button id="predictBtn">AI GOD Predict</button>
+<button onclick="predict()">AI GOD Predict</button>
 
 <button onclick="reset()">Reset</button>
 
-<div class="box" id="result"></div>
+<button onclick="undo()">Undo</button>
 
-<div id="chart"></div>
+<h2 id="result"></h2>
 
-<div id="history"></div>
 <h3>Lịch sử gần nhất</h3>
 
-<div id="historyGrid" style="
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:5px;
-margin:10px;
-"></div>
-
-<button onclick="undo()">Undo</button>
+<div id="historyGrid"
+style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
+</div>
 
 <script>
 
@@ -152,21 +125,23 @@ var col1=[1,4,7,10,13,16,19,22,25,28,31,34]
 var col2=[2,5,8,11,14,17,20,23,26,29,32,35]
 var col3=[3,6,9,12,15,18,21,24,27,30,33,36]
 
+
 function save(){
 
 localStorage.setItem("god",JSON.stringify(history))
 
 }
 
+
 function getCol(n){
 
 if(col1.includes(n)) return 1
 if(col2.includes(n)) return 2
 if(col3.includes(n)) return 3
-
 return 0
 
 }
+
 
 function createGrid(){
 
@@ -183,8 +158,9 @@ d.innerHTML=i
 d.onclick=function(){
 
 history.push(i)
+
 save()
-update()
+
 updateHistoryGrid()
 
 }
@@ -197,12 +173,6 @@ g.appendChild(d)
 
 createGrid()
 
-function update(){
-
-document.getElementById("history").innerHTML=
-"History: "+history.join(",")
-
-}
 
 function updateHistoryGrid(){
 
@@ -210,9 +180,7 @@ var grid=document.getElementById("historyGrid")
 
 grid.innerHTML=""
 
-var last20=history.slice(-20).reverse()
-
-last20.forEach(n=>{
+history.slice(-20).reverse().forEach(n=>{
 
 var d=document.createElement("div")
 
@@ -231,13 +199,12 @@ grid.appendChild(d)
 
 }
 
-update()
 
 function predict(){
 
 if(history.length==0){
 
-alert("Nhập ít nhất 1 số")
+alert("Chưa có dữ liệu")
 
 return
 
@@ -245,119 +212,63 @@ return
 
 var score=[0,0,0,0]
 
-history.forEach(n=>{
 
-score[getCol(n)]+=1
+history.forEach(n=>score[getCol(n)]+=1)
 
-})
+history.slice(-12).forEach(n=>score[getCol(n)]+=3)
 
-history.slice(-12).forEach(n=>{
+history.slice(-6).forEach(n=>score[getCol(n)]+=5)
 
-score[getCol(n)]+=3
-
-})
-
-history.slice(-6).forEach(n=>{
-
-score[getCol(n)]+=5
-
-})
-
-var last=getCol(history[history.length-1])
-
-var streak=0
-
-for(let i=history.length-1;i>=0;i--){
-
-if(getCol(history[i])==last)
-streak++
-else break
-
-}
-
-if(streak>=4){
-
-score[last]-=streak*2
-
-}
-
-var min=Math.min(score[1],score[2],score[3])
-
-for(let i=1;i<=3;i++){
-
-if(score[i]==min)
-score[i]+=4
-
-}
 
 var total=score[1]+score[2]+score[3]
 
-var p1=Math.round(score[1]/total*100)
-var p2=Math.round(score[2]/total*100)
-var p3=Math.round(score[3]/total*100)
+if(total==0){
+
+alert("Lỗi dữ liệu")
+
+return
+
+}
+
 
 var data=[
 
-{col:1,name:"Cột 1",score:score[1],p:p1},
-{col:2,name:"Cột 2",score:score[2],p:p2},
-{col:3,name:"Cột 3",score:score[3],p:p3}
+{col:1,score:score[1]},
+{col:2,score:score[2]},
+{col:3,score:score[3]}
 
 ]
 
+
 data.sort((a,b)=>b.score-a.score)
+
 
 document.getElementById("result").innerHTML=
 
-"ĐÁNH: "+data[0].name+" & "+data[1].name+
-"<br>TRÁNH: "+data[2].name
+"ĐÁNH: COLUMN "+data[0].col+
+" & COLUMN "+data[1].col+
+"<br>TRÁNH: COLUMN "+data[2].col
+
 
 highlight(data[0].col,data[2].col)
 
 }
 
+
 function highlight(win,lose){
 
-document.getElementById("col1").classList.remove("win","lose")
-document.getElementById("col2").classList.remove("win","lose")
-document.getElementById("col3").classList.remove("win","lose")
+["col1","col2","col3"].forEach(id=>{
+
+document.getElementById(id).classList.remove("win","lose")
+
+})
 
 document.getElementById("col"+win).classList.add("win")
+
 document.getElementById("col"+lose).classList.add("lose")
 
 }
 
-function drawChart(p1,p2,p3){
-
-document.getElementById("chart").innerHTML=
-
-`
-Cột 1
-<div class="bar" style="width:${p1*3}px"></div>
-
-Cột 2
-<div class="bar" style="width:${p2*3}px"></div>
-
-Cột 3
-<div class="bar" style="width:${p3*3}px"></div>
-`
-
-}
-
-function reset(){
-
-history=[]
-
-save()
-
-location.reload()
-
-}
-
-document.getElementById("predictBtn").onclick = function(){
-
-predict()
-
-}
 
 function undo(){
 
@@ -365,13 +276,26 @@ history.pop()
 
 save()
 
-update()
-
 updateHistoryGrid()
 
 }
 
+
+function reset(){
+
+history=[]
+
+save()
+
 updateHistoryGrid()
+
+document.getElementById("result").innerHTML=""
+
+}
+
+
+updateHistoryGrid()
+
 </script>
 
 </body>
