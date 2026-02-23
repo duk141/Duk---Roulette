@@ -82,6 +82,21 @@ background:red;
 margin:5px;
 }
 
+.histNum{
+
+width:40px;
+height:40px;
+line-height:40px;
+border-radius:5px;
+font-weight:bold;
+
+}
+
+.c1{background:#2196F3;}
+.c2{background:#FF9800;}
+.c3{background:#E91E63;}
+.zero{background:green;}
+
 </style>
 
 </head>
@@ -117,6 +132,17 @@ margin:5px;
 <div id="chart"></div>
 
 <div id="history"></div>
+<h3>Lịch sử gần nhất</h3>
+
+<div id="historyGrid" style="
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:5px;
+margin:10px;
+"></div>
+
+<button onclick="undo()">Undo</button>
 
 <script>
 
@@ -157,10 +183,9 @@ d.innerHTML=i
 d.onclick=function(){
 
 history.push(i)
-
 save()
-
 update()
+updateHistoryGrid()
 
 }
 
@@ -176,6 +201,33 @@ function update(){
 
 document.getElementById("history").innerHTML=
 "History: "+history.join(",")
+
+}
+
+function updateHistoryGrid(){
+
+var grid=document.getElementById("historyGrid")
+
+grid.innerHTML=""
+
+var last20=history.slice(-20).reverse()
+
+last20.forEach(n=>{
+
+var d=document.createElement("div")
+
+d.className="histNum"
+
+if(col1.includes(n)) d.classList.add("c1")
+else if(col2.includes(n)) d.classList.add("c2")
+else if(col3.includes(n)) d.classList.add("c3")
+else d.classList.add("zero")
+
+d.innerHTML=n
+
+grid.appendChild(d)
+
+})
 
 }
 
@@ -307,6 +359,19 @@ predict()
 
 }
 
+function undo(){
+
+history.pop()
+
+save()
+
+update()
+
+updateHistoryGrid()
+
+}
+
+updateHistoryGrid()
 </script>
 
 </body>
