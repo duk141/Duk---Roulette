@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ROULETTE AI GOD MODE</title>
+<title>ROULETTE AI GOD MODE PRO</title>
 
 <style>
 
 body{
-background:#063;
+background:#0b5;
 color:white;
 font-family:Arial;
 text-align:center;
@@ -20,50 +20,46 @@ color:gold;
 .grid{
 
 display:grid;
-grid-template-columns:repeat(3,90px);
-gap:6px;
+grid-template-columns:repeat(3,80px);
+gap:5px;
 justify-content:center;
-margin:20px;
 
 }
 
 .num{
 
-padding:18px;
 background:black;
-border-radius:6px;
+padding:15px;
+border-radius:5px;
 cursor:pointer;
-font-size:18px;
 
 }
 
-.num:hover{
-background:red;
+.zero{
+
+background:green;
+
+}
+
+.win{
+
+background:gold !important;
+color:black;
+
+}
+
+.lose{
+
+background:red !important;
+
 }
 
 button{
 
-padding:12px;
+padding:10px;
 margin:5px;
-font-weight:bold;
 background:gold;
 border:none;
-cursor:pointer;
-
-}
-
-.box{
-
-margin-top:20px;
-font-size:22px;
-
-}
-
-.bar{
-
-height:20px;
-background:red;
-margin:5px;
 
 }
 
@@ -73,26 +69,33 @@ margin:5px;
 
 <body>
 
-<h1>ROULETTE AI GOD MODE</h1>
+<h1>ROULETTE AI GOD MODE PRO</h1>
 
-<h3>Chọn số vừa ra</h3>
+<div class="num zero" onclick="add(0)">0</div>
+
+<br>
 
 <div class="grid" id="grid"></div>
 
-<button onclick="predict()">AI GOD Predict</button>
+<br>
+
+<button onclick="predict()">AI Predict</button>
+
+<button onclick="undo()">Undo</button>
 
 <button onclick="reset()">Reset</button>
 
-<div class="box" id="result"></div>
+<h2 id="result"></h2>
 
-<div id="chart"></div>
+<h3 id="confidence"></h3>
 
-<div id="history"></div>
+<h3 id="history"></h3>
+
 
 <script>
 
 
-var history = JSON.parse(localStorage.getItem("god")) || []
+var history=JSON.parse(localStorage.getItem("roulette"))||[]
 
 
 var col1=[1,4,7,10,13,16,19,22,25,28,31,34]
@@ -102,9 +105,70 @@ var col3=[3,6,9,12,15,18,21,24,27,30,33,36]
 
 function save(){
 
-localStorage.setItem("god",JSON.stringify(history))
+localStorage.setItem("roulette",JSON.stringify(history))
 
 }
+
+
+function create(){
+
+var g=document.getElementById("grid")
+
+for(let i=1;i<=36;i++){
+
+let d=document.createElement("div")
+
+d.className="num"
+
+d.innerHTML=i
+
+d.onclick=function(){
+
+add(i)
+
+}
+
+g.appendChild(d)
+
+}
+
+}
+
+create()
+
+
+function add(n){
+
+history.push(n)
+
+save()
+
+update()
+
+}
+
+
+function undo(){
+
+history.pop()
+
+save()
+
+update()
+
+}
+
+
+function update(){
+
+document.getElementById("history").innerHTML=
+
+"History: "+history.join(",")
+
+}
+
+
+update()
 
 
 function getCol(n){
@@ -119,57 +183,12 @@ return 0
 
 
 
-function createGrid(){
-
-var g=document.getElementById("grid")
-
-for(let i=1;i<=36;i++){
-
-let d=document.createElement("div")
-
-d.className="num"
-
-d.innerHTML=i
-
-d.onclick=function(){
-
-history.push(i)
-
-save()
-
-update()
-
-}
-
-g.appendChild(d)
-
-}
-
-}
-
-createGrid()
-
-
-
-function update(){
-
-document.getElementById("history").innerHTML=
-
-"History: "+history.join(",")
-
-}
-
-update()
-
-
-
 function predict(){
-
 
 var score=[0,0,0,0]
 
 
-// 1. TẦN SUẤT
+// frequency
 
 history.forEach(n=>{
 
@@ -178,26 +197,16 @@ score[getCol(n)]+=1
 })
 
 
-// 2. TREND gần
+// trend
 
-history.slice(-12).forEach(n=>{
+history.slice(-15).forEach(n=>{
 
-score[getCol(n)]+=3
-
-})
-
-
-// 3. TREND cực gần
-
-history.slice(-6).forEach(n=>{
-
-score[getCol(n)]+=5
+score[getCol(n)]+=4
 
 })
 
 
-
-// 4. STREAK DETECT
+// streak anti trap
 
 var last=getCol(history[history.length-1])
 
@@ -214,25 +223,17 @@ else break
 }
 
 
-if(streak>=4){
+if(streak>=4)
 
-score[last]-=streak*2
-
-}
+score[last]-=streak*3
 
 
 
-// 5. COLD BONUS
+// cold boost
 
 var min=Math.min(score[1],score[2],score[3])
 
-for(let i=1;i<=3;i++){
-
-if(score[i]==min)
-
-score[i]+=4
-
-}
+score[score.indexOf(min)]+=6
 
 
 
@@ -247,11 +248,11 @@ var p3=Math.round(score[3]/total*100)
 
 var data=[
 
-{name:"Cột 1",score:score[1],p:p1},
+{col:1,score:score[1],p:p1},
 
-{name:"Cột 2",score:score[2],p:p2},
+{col:2,score:score[2],p:p2},
 
-{name:"Cột 3",score:score[3],p:p3}
+{col:3,score:score[3],p:p3}
 
 ]
 
@@ -262,60 +263,63 @@ data.sort((a,b)=>b.score-a.score)
 
 document.getElementById("result").innerHTML=
 
-`
+"ĐÁNH: Cột "+data[0].col+" & "+data[1].col+
 
-ĐÁNH:
-
-${data[0].name}
-${data[1].name}
+"<br>TRÁNH: Cột "+data[2].col
 
 
-TRÁNH:
 
-${data[2].name}
+document.getElementById("confidence").innerHTML=
 
-
-Xác suất:
-
-${data[0].name}: ${data[0].p}%
-
-${data[1].name}: ${data[1].p}%
-
-${data[2].name}: ${data[2].p}%
+"Confidence: "+data[0].p+"%"
 
 
-STREAK:
+highlight(data[0].col,data[2].col)
 
-${streak}
-
-`
-
-
-drawChart(p1,p2,p3)
 
 }
 
 
 
-function drawChart(p1,p2,p3){
+function highlight(win,lose){
 
-document.getElementById("chart").innerHTML=
+document.querySelectorAll(".num").forEach(el=>{
 
-`
+var n=parseInt(el.innerHTML)
 
-Cột 1
+el.classList.remove("win")
 
-<div class="bar" style="width:${p1*3}px"></div>
+el.classList.remove("lose")
 
-Cột 2
 
-<div class="bar" style="width:${p2*3}px"></div>
+if(col1.includes(n)){
 
-Cột 3
+if(win==1) el.classList.add("win")
 
-<div class="bar" style="width:${p3*3}px"></div>
+if(lose==1) el.classList.add("lose")
 
-`
+}
+
+
+if(col2.includes(n)){
+
+if(win==2) el.classList.add("win")
+
+if(lose==2) el.classList.add("lose")
+
+}
+
+
+if(col3.includes(n)){
+
+if(win==3) el.classList.add("win")
+
+if(lose==3) el.classList.add("lose")
+
+}
+
+
+})
 
 }
 
@@ -329,9 +333,7 @@ save()
 
 update()
 
-document.getElementById("result").innerHTML=""
-
-document.getElementById("chart").innerHTML=""
+location.reload()
 
 }
 
