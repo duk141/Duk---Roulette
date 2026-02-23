@@ -159,6 +159,8 @@ function createGrid(){
 
 var g=document.getElementById("grid")
 
+g.innerHTML=""
+
 for(let i=1;i<=36;i++){
 
 let d=document.createElement("div")
@@ -173,9 +175,7 @@ history.push(i)
 
 save()
 
-updateHistoryGrid()
-
-updateHistoryText()
+updateAll()
 
 }
 
@@ -185,7 +185,6 @@ g.appendChild(d)
 
 }
 
-createGrid()
 
 
 function updateHistoryGrid(){
@@ -202,8 +201,7 @@ d.className="histNum"
 
 if(col1.includes(n)) d.classList.add("c1")
 else if(col2.includes(n)) d.classList.add("c2")
-else if(col3.includes(n)) d.classList.add("c3")
-else d.classList.add("zero")
+else d.classList.add("c3")
 
 d.innerHTML=n
 
@@ -213,9 +211,11 @@ grid.appendChild(d)
 
 }
 
+
+
 function updateHistoryText(){
 
-var text = document.getElementById("historyText")
+var text=document.getElementById("historyText")
 
 if(history.length==0){
 
@@ -225,9 +225,10 @@ return
 
 }
 
-text.innerHTML = history.slice().reverse().join(" ")
+text.innerHTML=history.slice().reverse().join(" ")
 
 }
+
 
 
 function predict(){
@@ -242,23 +243,11 @@ return
 
 var score=[0,0,0,0]
 
+history.forEach(n=>score[getCol(n)]++)
 
-history.forEach(n=>score[getCol(n)]+=1)
+history.slice(-12).forEach(n=>score[getCol(n)]+=2)
 
-history.slice(-12).forEach(n=>score[getCol(n)]+=3)
-
-history.slice(-6).forEach(n=>score[getCol(n)]+=5)
-
-
-var total=score[1]+score[2]+score[3]
-
-if(total==0){
-
-alert("Lỗi dữ liệu")
-
-return
-
-}
+history.slice(-6).forEach(n=>score[getCol(n)]+=3)
 
 
 var data=[
@@ -275,8 +264,7 @@ data.sort((a,b)=>b.score-a.score)
 
 document.getElementById("result").innerHTML=
 
-"ĐÁNH: COLUMN "+data[0].col+
-" & COLUMN "+data[1].col+
+"ĐÁNH: COLUMN "+data[0].col+" & COLUMN "+data[1].col+
 "<br>TRÁNH: COLUMN "+data[2].col
 
 
@@ -285,19 +273,18 @@ highlight(data[0].col,data[2].col)
 }
 
 
+
 function highlight(win,lose){
 
-["col1","col2","col3"].forEach(id=>{
-
-document.getElementById(id).classList.remove("win","lose")
-
-})
+document.getElementById("col1").classList.remove("win","lose")
+document.getElementById("col2").classList.remove("win","lose")
+document.getElementById("col3").classList.remove("win","lose")
 
 document.getElementById("col"+win).classList.add("win")
-
 document.getElementById("col"+lose).classList.add("lose")
 
 }
+
 
 
 function undo(){
@@ -306,11 +293,10 @@ history.pop()
 
 save()
 
-updateHistoryGrid()
-
-updateHistoryText()
+updateAll()
 
 }
+
 
 
 function reset(){
@@ -319,17 +305,27 @@ history=[]
 
 save()
 
-updateHistoryGrid()
-
-updateHistoryText()
+updateAll()
 
 document.getElementById("result").innerHTML=""
 
 }
 
 
+
+function updateAll(){
+
 updateHistoryGrid()
+
 updateHistoryText()
+
+}
+
+
+
+createGrid()
+
+updateAll()
 
 </script>
 
