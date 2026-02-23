@@ -4,6 +4,8 @@ let count = [0,0,0];
 
 let chart;
 
+let aiPredictText="";
+
 
 // xác định cột
 
@@ -73,6 +75,8 @@ document.getElementById("p2").innerText = p2+"%";
 document.getElementById("p3").innerText = p3+"%";
 
 predict(p1,p2,p3);
+
+aiAnalysis();
 
 updateHistory();
 
@@ -236,6 +240,84 @@ el.classList.remove("active");
 },300);
 
 }
+
+function aiAnalysis(){
+
+if(history.length < 5){
+
+aiPredictText="AI: Chưa đủ dữ liệu";
+
+return;
+
+}
+
+
+// lấy 6 kết quả gần nhất
+
+let recent = history.slice(-6);
+
+let freq=[0,0,0];
+
+recent.forEach(x=>{
+
+if(x.col!="0"){
+
+freq[x.col-1]++;
+
+}
+
+});
+
+
+// tìm cột yếu
+
+let min = Math.min(...freq);
+
+let weak = freq.indexOf(min)+1;
+
+
+// kiểm tra cầu bệt
+
+let last = history[history.length-1].col;
+
+let streak=1;
+
+for(let i=history.length-2;i>=0;i--){
+
+if(history[i].col==last){
+
+streak++;
+
+}else{
+
+break;
+
+}
+
+}
+
+
+// AI quyết định
+
+if(streak>=3){
+
+aiPredictText=
+
+"AI: Cầu bệt Cột "+last+
+
+" → Nên đánh tiếp";
+
+}else{
+
+aiPredictText=
+
+"AI: Cột "+weak+
+
+" lâu chưa ra → Có thể sắp ra";
+
+}
+
+           }
 
 
 // chạy khi mở web
