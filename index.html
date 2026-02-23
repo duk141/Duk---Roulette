@@ -1,503 +1,341 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roulette PRO - DUK</title>
+<meta charset="UTF-8">
+<title>ROULETTE AI GOD MODE</title>
+
 <style>
+
 body{
-    background:#0b0b0b;
-    color:#fff;
-    text-align:center;
-    font-family:Arial;
+background:#063;
+color:white;
+font-family:Arial;
+text-align:center;
 }
 
-.mode-box{margin:10px;}
-.mode-btn{
-    padding:8px 15px;
-    margin:5px;
-    background:#222;
-    color:#fff;
-    border:none;
-    border-radius:5px;
-}
-.mode-btn.active{
-    background:#00c3ff;
-}
-
-.columns{
-    display:flex;
-    justify-content:center;
-    margin-top:10px;
-}
-
-.col{
-    margin:5px;
-    padding:5px;
-    border:1px solid #333;
-}
-
-.col-title{
-    margin-bottom:5px;
+h1{
+color:gold;
 }
 
 .grid{
-    display:grid;
-    grid-template-columns:repeat(3,40px);
+
+display:grid;
+grid-template-columns:repeat(3,90px);
+gap:6px;
+justify-content:center;
+margin:20px;
+
 }
 
 .num{
-    width:40px;
-    height:40px;
-    line-height:40px;
-    margin:2px;
-    cursor:pointer;
-    border-radius:4px;
-    font-weight:bold;
+
+padding:18px;
+background:black;
+border-radius:6px;
+cursor:pointer;
+font-size:18px;
+
 }
 
-.zero{
-    width:60px;
-    margin:auto;
-    padding:10px;
-    background:green;
-    border-radius:6px;
-    cursor:pointer;
+.num:hover{
+background:red;
 }
 
-.active-col{
-    border:2px solid #00ffcc;
-    box-shadow:0 0 10px #00ffcc;
+button{
+
+padding:12px;
+margin:5px;
+font-weight:bold;
+background:gold;
+border:none;
+cursor:pointer;
+
 }
 
-.bar-bg{
-    width:80%;
-    height:10px;
-    background:#222;
-    margin:5px auto;
-}
-
-.bar{
-    height:10px;
-    width:0%;
-    background:#00ffcc;
-}
-
-.history{
-    margin-top:10px;
-    font-size:14px;
-}
-.scan{
-    animation: scanGlow 0.8s infinite alternate;
-}
-
-@keyframes scanGlow{
-    from{ box-shadow:0 0 5px #00ffcc; }
-    to{ box-shadow:0 0 25px #00ffcc; }
-}
-/* ===== BOX CHUNG ===== */
 .box{
-    width:90%;
-    margin:10px auto;
-    padding:10px;
-    background:#111;
-    border-radius:10px;
-    border:1px solid #222;
-}
 
-/* ===== THANH % ===== */
-.bar-bg{
-    width:100%;
-    height:14px;
-    background:#222;
-    border-radius:10px;
-    margin:6px 0;
-    overflow:hidden;
+margin-top:20px;
+font-size:22px;
+
 }
 
 .bar{
-    height:100%;
-    width:0%;
-    transition:0.3s;
+
+height:20px;
+background:red;
+margin:5px;
+
 }
 
-/* Mức mạnh */
-.weak{ background:#e74c3c; }      /* đỏ */
-.medium{ background:#f1c40f; }    /* vàng */
-.strong{ background:#00ffc8; }    /* xanh */
-
-/* ===== BOX AI ===== */
-.ai-box{
-    font-size:16px;
-    font-weight:bold;
-    color:#00ffc8;
-    text-align:center;
-}
-
-/* ===== LỊCH SỬ ===== */
-.history-box{
-    font-size:14px;
-    letter-spacing:2px;
-    word-wrap:break-word;
-    color:#ccc;
-}
-/* ===== GLASS BOX + LED ===== */
-.glass-box{
-    position:relative;
-    background:rgba(255,255,255,0.05);
-    backdrop-filter:blur(12px);
-    border-radius:15px;
-    padding:15px;
-    border:1px solid rgba(255,255,255,0.1);
-    overflow:hidden;
-}
-
-/* Viền LED chạy */
-.glass-box::before{
-    content:"";
-    position:absolute;
-    top:-2px;
-    left:-2px;
-    right:-2px;
-    bottom:-2px;
-    border-radius:18px;
-    background:linear-gradient(
-        45deg,
-        #00ffc8,
-        #00c3ff,
-        #7a00ff,
-        #00ffc8
-    );
-    background-size:400% 400%;
-    z-index:-1;
-    animation:ledRun 6s linear infinite;
-}
-
-/* Animation chạy vòng */
-@keyframes ledRun{
-    0%{ background-position:0% 50%; }
-    50%{ background-position:100% 50%; }
-    100%{ background-position:0% 50%; }
-}
-
-/* Glow nhẹ */
-.glass-box{
-    box-shadow:
-        0 0 15px rgba(0,255,200,0.3),
-        inset 0 0 10px rgba(0,255,200,0.1);
-}
 </style>
+
 </head>
-<body><h3>Roulette PRO - DUK</h3><div class="mode-box">
-<button class="mode-btn active" id="riskBtn" onclick="setMode('risk')">Risk</button>
-<button class="mode-btn" id="safeBtn" onclick="setMode('safe')">Safe</button>
-</div><div class="zero" onclick="addNumber(0)">0</div><div class="columns">
-<div class="col" id="col1"><div class="col-title">Cột 1</div><div class="grid" id="g1"></div></div>
-<div class="col" id="col2"><div class="col-title">Cột 2</div><div class="grid" id="g2"></div></div>
-<div class="col" id="col3"><div class="col-title">Cột 3</div><div class="grid" id="g3"></div></div>
-</div>
-<!-- ===== BOX % ===== -->
-<div class="box glass-box ai-box">
-    <div class="bar-bg"><div class="bar" id="b1"></div></div>
-    <div class="bar-bg"><div class="bar" id="b2"></div></div>
-    <div class="bar-bg"><div class="bar" id="b3"></div></div>
-</div>
 
-<!-- ===== BOX AI ===== -->
-<div class="box glass-box ai-box">
-    <div id="ai">DUK - Đang phân tích...</div>
-    <div id="winrate">TỶ LỆ THẮNG: 0%</div>
-</div>
+<body>
 
-<!-- ===== BOX LỊCH SỬ ===== -->
-<div class="box history-box" id="history">
-</div>
+<h1>ROULETTE AI GOD MODE</h1>
+
+<h3>Chọn số vừa ra</h3>
+
+<div class="grid" id="grid"></div>
+
+<button onclick="predict()">AI GOD Predict</button>
+
+<button onclick="reset()">Reset</button>
+
+<div class="box" id="result"></div>
+
+<div id="chart"></div>
+
+<div id="history"></div>
 
 <script>
-// ===== CẤU HÌNH =====
-let history = [];
-let maxHistory = 15;
-let mode = "risk";
-let lastPrediction = null;
-let win = 0;
-let total = 0;
-let doubleMode = true; // bật đánh 2 cột
-let predictCols = []; // lưu các cột AI theo
-let lastAI = "";
-let lockedPercent = {c1:0,c2:0,c3:0};
-let lockState = false;
-let lose = 0;
-let lastSignal = "";
-let lockReady = false;
 
-function getColumn(num){
-    if(num==0) return 0;
-    if(num%3==1) return 1;
-    if(num%3==2) return 2;
-    return 3;
+
+var history = JSON.parse(localStorage.getItem("god")) || []
+
+
+var col1=[1,4,7,10,13,16,19,22,25,28,31,34]
+var col2=[2,5,8,11,14,17,20,23,26,29,32,35]
+var col3=[3,6,9,12,15,18,21,24,27,30,33,36]
+
+
+function save(){
+
+localStorage.setItem("god",JSON.stringify(history))
+
 }
 
-// ===== MÀU ROULETTE CHUẨN =====
-const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
-// ===== CHẾ ĐỘ =====
-function setMode(m){
-    mode = m;
-    document.getElementById("riskBtn").classList.remove("active");
-    document.getElementById("safeBtn").classList.remove("active");
+function getCol(n){
 
-    if(m=="risk"){
-        document.getElementById("riskBtn").classList.add("active");
-    }else{
-        document.getElementById("safeBtn").classList.add("active");
-    }
+if(col1.includes(n)) return 1
+if(col2.includes(n)) return 2
+if(col3.includes(n)) return 3
+
+return 0
+
 }
 
-// ===== TẠO BẢNG SỐ =====
+
+
 function createGrid(){
-    for(let i=1;i<=36;i++){
-        let btn = document.createElement("div");
-        btn.className="num";
-        btn.innerText=i;
-        btn.onclick=()=>addNumber(i);
 
-        // Màu đỏ đen
-        if(redNums.includes(i)){
-            btn.style.background="#c0392b";
-        }else{
-            btn.style.background="#111";
-        }
+var g=document.getElementById("grid")
 
-        // Chia cột giống bàn thật
-        if(i%3==1){
-            document.getElementById("g1").appendChild(btn);
-        }else if(i%3==2){
-            document.getElementById("g2").appendChild(btn);
-        }else{
-            document.getElementById("g3").appendChild(btn);
-        }
-    }
-}
-createGrid();
+for(let i=1;i<=36;i++){
 
-function scanEffect(callback){
-    let cols = ["col1","col2","col3"];
-    let i = 0;
-    let loop = setInterval(()=>{
-        cols.forEach(c=>{
-            document.getElementById(c).classList.remove("scan");
-        });
+let d=document.createElement("div")
 
-        document.getElementById(cols[i]).classList.add("scan");
-        i++;
+d.className="num"
 
-        if(i>=6){
-            clearInterval(loop);
-            cols.forEach(c=>{
-                document.getElementById(c).classList.remove("scan");
-            });
-            callback();
-        }
-    },120);
+d.innerHTML=i
+
+d.onclick=function(){
+
+history.push(i)
+
+save()
+
+update()
+
 }
 
-// ===== THÊM KẾT QUẢ =====
-function addNumber(n){
+g.appendChild(d)
 
-    // ===== Nếu ra 0 → RESET =====
-if(n === 0){
-    history = [];
-    win = 0;
-    lose = 0;
-    total = 0;
-    predictCols = [];
-    lastPrediction = null;
-
-    // reset khóa %
-    lockedPercent = {c1:0,c2:0,c3:0};
-    lockReady = false;
-    lastSignal = "";
-
-    document.getElementById("b1").style.width = "0%";
-    document.getElementById("b2").style.width = "0%";
-    document.getElementById("b3").style.width = "0%";
-
-    document.getElementById("col1").classList.remove("active-col");
-    document.getElementById("col2").classList.remove("active-col");
-    document.getElementById("col3").classList.remove("active-col");
-
-    document.getElementById("ai").innerText = "⛔ Reset (ra 0)";
-    document.getElementById("winrate").innerText = "Win rate: 0%";
-    document.getElementById("history").innerText = "";
-
-    return;
 }
 
-    // ===== Thêm kết quả bình thường =====
-    history.unshift(n);
-    if(history.length>maxHistory) history.pop();
-
-    updateHistory();
-    analyze(n);
 }
 
-// ===== HIỂN THỊ LỊCH SỬ =====
-function updateHistory(){
-    document.getElementById("history").innerText =
-        history.join("  ");
+createGrid()
+
+
+
+function update(){
+
+document.getElementById("history").innerHTML=
+
+"History: "+history.join(",")
+
 }
 
-// ===== PHÂN TÍCH AI =====
-function analyze(lastNumber){
+update()
 
-// ===== CHỈ PHÂN TÍCH KHI ĐỦ DỮ LIỆU =====
-if(history.length < 10){
-    document.getElementById("ai").innerText = "AI đang thu thập dữ liệu...";
-    return;
+
+
+function predict(){
+
+
+var score=[0,0,0,0]
+
+
+// 1. TẦN SUẤT
+
+history.forEach(n=>{
+
+score[getCol(n)]+=1
+
+})
+
+
+// 2. TREND gần
+
+history.slice(-12).forEach(n=>{
+
+score[getCol(n)]+=3
+
+})
+
+
+// 3. TREND cực gần
+
+history.slice(-6).forEach(n=>{
+
+score[getCol(n)]+=5
+
+})
+
+
+
+// 4. STREAK DETECT
+
+var last=getCol(history[history.length-1])
+
+var streak=0
+
+for(let i=history.length-1;i>=0;i--){
+
+if(getCol(history[i])==last)
+
+streak++
+
+else break
+
 }
 
-// ===== Đếm 15 ván gần nhất =====
-let recent = history.slice(0,10);
-let c1=0,c2=0,c3=0;
 
-recent.forEach(n=>{
-    if(n%3==1) c1++;
-    else if(n%3==2) c2++;
-    else if(n%3==0) c3++;
-});
+if(streak>=4){
 
-let p1 = Math.round(c1/recent.length*100);
-let p2 = Math.round(c2/recent.length*100);
-let p3 = Math.round(c3/recent.length*100);
+score[last]-=streak*2
 
-// ===== KHÓA % CHỐNG NHẢY =====
-let diff = Math.max(
-    Math.abs(p1-lockedPercent.c1),
-    Math.abs(p2-lockedPercent.c2),
-    Math.abs(p3-lockedPercent.c3)
-);
-
-// Chỉ khóa khi Risk mạnh
-if(lastSignal === "risk"){
-    if(!lockReady || diff > 8){
-        lockedPercent = {c1:p1,c2:p2,c3:p3};
-        lockReady = true;
-    }
-
-    p1 = lockedPercent.c1;
-    p2 = lockedPercent.c2;
-    p3 = lockedPercent.c3;
-}else{
-    // Safe hoặc NoBet → không khóa
-    lockedPercent = {c1:p1,c2:p2,c3:p3};
 }
 
-p1 = lockedPercent.c1;
-p2 = lockedPercent.c2;
-p3 = lockedPercent.c3;
 
-    let percent = [p1, p2, p3];
 
-// ===== Nhận biết bệt =====
-let last5 = recent.slice(0,5).map(getColumn);
-let isBiet = last5.every(v => v === last5[0]);
+// 5. COLD BONUS
 
-// ===== Nhận biết gãy =====
-let last3 = recent.slice(0,3).map(getColumn);
-let zigzag = new Set(last3).size >= 2;
+var min=Math.min(score[1],score[2],score[3])
 
-let max = Math.max(percent[0],percent[1],percent[2]);
-let min = Math.min(percent[0],percent[1],percent[2]);
+for(let i=1;i<=3;i++){
 
-predictCols = [];
-let signal = "";
+if(score[i]==min)
 
-// 🔥 Risk mạnh (bệt thật)
-if(isBiet && max >= 45){
-    let col = percent.indexOf(max) + 1;
-    predictCols = [col];
-    signal = "🔥 Risk CỘT MẠNH";
-    lastSignal = "risk";
+score[i]+=4
+
 }
 
-// ⚠ Safe yếu (2 cột yếu)
-else if(max >= 38 && (max-min) >= 10){
-    let arr = [
-        {c:1,v:percent[0]},
-        {c:2,v:percent[1]},
-        {c:3,v:percent[2]}
-    ];
 
-    arr.sort((a,b)=>a.v-b.v);
-    predictCols = [arr[0].c, arr[1].c];
 
-    signal = "⚠ Safe CỘT YẾU";
-    lastSignal = "safe";
+var total=score[1]+score[2]+score[3]
+
+
+var p1=Math.round(score[1]/total*100)
+var p2=Math.round(score[2]/total*100)
+var p3=Math.round(score[3]/total*100)
+
+
+
+var data=[
+
+{name:"Cột 1",score:score[1],p:p1},
+
+{name:"Cột 2",score:score[2],p:p2},
+
+{name:"Cột 3",score:score[3],p:p3}
+
+]
+
+
+data.sort((a,b)=>b.score-a.score)
+
+
+
+document.getElementById("result").innerHTML=
+
+`
+
+ĐÁNH:
+
+${data[0].name}
+${data[1].name}
+
+
+TRÁNH:
+
+${data[2].name}
+
+
+Xác suất:
+
+${data[0].name}: ${data[0].p}%
+
+${data[1].name}: ${data[1].p}%
+
+${data[2].name}: ${data[2].p}%
+
+
+STREAK:
+
+${streak}
+
+`
+
+
+drawChart(p1,p2,p3)
+
 }
 
-// ⛔ KHÔNG NÊN CƯỢC (gãy hoặc nhiễu)
-else{
-    predictCols = [];
-    signal = "⛔ NO BET";
-    lastSignal = "";
+
+
+function drawChart(p1,p2,p3){
+
+document.getElementById("chart").innerHTML=
+
+`
+
+Cột 1
+
+<div class="bar" style="width:${p1*3}px"></div>
+
+Cột 2
+
+<div class="bar" style="width:${p2*3}px"></div>
+
+Cột 3
+
+<div class="bar" style="width:${p3*3}px"></div>
+
+`
+
 }
 
-lastPrediction = predictCols;
 
-    // ===== HIGHLIGHT CỘT =====
-scanEffect(()=>{
-    document.getElementById("col1").classList.remove("active-col");
-    document.getElementById("col2").classList.remove("active-col");
-    document.getElementById("col3").classList.remove("active-col");
 
-    predictCols.forEach(c=>{
-        document.getElementById("col"+c).classList.add("active-col");
-    });
-});
+function reset(){
 
-    // ===== THANH % =====
-    setBar("b1", percent[0]);
-    setBar("b2", percent[1]);
-    setBar("b3", percent[2]);
+history=[]
 
-if(predictCols.length > 0){
-    document.getElementById("ai").innerText =
-        signal + " → Cột " + predictCols.join(" + ");
-}else{
-    document.getElementById("ai").innerText = signal;
+save()
+
+update()
+
+document.getElementById("result").innerHTML=""
+
+document.getElementById("chart").innerHTML=""
+
 }
 
-function setBar(id, p){
-    let bar = document.getElementById(id);
-    bar.style.width = p + "%";
 
-    bar.classList.remove("weak","medium","strong");
-
-    if(p < 30){
-        bar.classList.add("weak");
-    }else if(p < 50){
-        bar.classList.add("medium");
-    }else{
-        bar.classList.add("strong");
-    }
-}
-
-// ===== WIN RATE =====
-if(lastPrediction.length > 0){
-
-    total++;   // <<< THIẾU DÒNG NÀY
-
-    let realCol = getColumn(lastNumber);
-
-    if(lastPrediction.includes(realCol)){
-        win++;
-    }else{
-        lose++;
-    }
-}
-
-let wr = total>0 ? Math.round(win/total*100) : 0;
-document.getElementById("winrate").innerText =
-"TỶ LỆ THẮNG: " + wr + "%";
-}
 </script>
 
 </body>
