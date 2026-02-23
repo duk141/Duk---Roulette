@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>ROULETTE AI GOD MODE CASINO</title>
+<title>ROULETTE AI GOD MODE</title>
 
 <style>
 
 body{
-background:#0b5;
+background:#063;
 color:white;
 font-family:Arial;
 text-align:center;
@@ -18,75 +18,68 @@ color:gold;
 }
 
 .container{
-
 display:flex;
 justify-content:center;
 gap:20px;
-
 }
 
 .grid{
-
 display:grid;
-grid-template-columns:repeat(3,70px);
-gap:5px;
-
+grid-template-columns:repeat(3,90px);
+gap:6px;
 }
 
 .num{
-
+padding:18px;
 background:black;
-padding:15px;
+border-radius:6px;
 cursor:pointer;
-border-radius:5px;
-
+font-size:18px;
 }
 
-.zero{
-
-background:green;
-width:215px;
-margin:auto;
-margin-bottom:5px;
-
+.num:hover{
+background:red;
 }
 
 .columns{
-
 display:flex;
 flex-direction:column;
-gap:5px;
-
+gap:6px;
 }
 
 .col{
-
 background:#222;
 padding:15px;
-border-radius:5px;
-
+border-radius:6px;
 }
 
 .win{
-
 background:gold !important;
 color:black;
-
 }
 
 .lose{
-
 background:red !important;
-
 }
 
 button{
-
-padding:10px;
-margin:10px;
+padding:12px;
+margin:5px;
+font-weight:bold;
 background:gold;
 border:none;
+cursor:pointer;
+}
 
+.box{
+margin-top:20px;
+font-size:22px;
+}
+
+.bar{
+height:20px;
+background:red;
+margin:5px;
 }
 
 </style>
@@ -97,7 +90,7 @@ border:none;
 
 <h1>ROULETTE AI GOD MODE</h1>
 
-<div class="zero num" onclick="add(0)">0</div>
+<h3>Chọn số vừa ra</h3>
 
 <div class="container">
 
@@ -115,36 +108,41 @@ border:none;
 
 </div>
 
-<button onclick="predict()">AI Predict</button>
+<button onclick="predict()">AI GOD Predict</button>
 
 <button onclick="reset()">Reset</button>
 
-<h2 id="result"></h2>
+<div class="box" id="result"></div>
 
-<h3 id="hotcold"></h3>
+<div id="chart"></div>
 
-<h3 id="confidence"></h3>
-
-<h3 id="history"></h3>
+<div id="history"></div>
 
 <script>
 
-var history=JSON.parse(localStorage.getItem("roulette"))||[]
-
+var history = JSON.parse(localStorage.getItem("god")) || []
 
 var col1=[1,4,7,10,13,16,19,22,25,28,31,34]
 var col2=[2,5,8,11,14,17,20,23,26,29,32,35]
 var col3=[3,6,9,12,15,18,21,24,27,30,33,36]
 
-
 function save(){
 
-localStorage.setItem("roulette",JSON.stringify(history))
+localStorage.setItem("god",JSON.stringify(history))
 
 }
 
+function getCol(n){
 
-function create(){
+if(col1.includes(n)) return 1
+if(col2.includes(n)) return 2
+if(col3.includes(n)) return 3
+
+return 0
+
+}
+
+function createGrid(){
 
 var g=document.getElementById("grid")
 
@@ -158,7 +156,11 @@ d.innerHTML=i
 
 d.onclick=function(){
 
-add(i)
+history.push(i)
+
+save()
+
+update()
 
 }
 
@@ -168,46 +170,20 @@ g.appendChild(d)
 
 }
 
-create()
-
-
-function add(n){
-
-history.push(n)
-
-save()
-
-update()
-
-}
-
+createGrid()
 
 function update(){
 
 document.getElementById("history").innerHTML=
-
 "History: "+history.join(",")
 
 }
 
 update()
 
-
-function getCol(n){
-
-if(col1.includes(n)) return 1
-if(col2.includes(n)) return 2
-if(col3.includes(n)) return 3
-
-return 0
-
-}
-
-
 function predict(){
 
 var score=[0,0,0,0]
-
 
 history.forEach(n=>{
 
@@ -215,61 +191,82 @@ score[getCol(n)]+=1
 
 })
 
-
-history.slice(-10).forEach(n=>{
+history.slice(-12).forEach(n=>{
 
 score[getCol(n)]+=3
 
 })
 
+history.slice(-6).forEach(n=>{
 
-var data=[
+score[getCol(n)]+=5
 
-{col:1,score:score[1]},
+})
 
-{col:2,score:score[2]},
+var last=getCol(history[history.length-1])
 
-{col:3,score:score[3]}
+var streak=0
 
-]
+for(let i=history.length-1;i>=0;i--){
 
-
-data.sort((a,b)=>b.score-a.score)
-
-
-var hot=data[0].col
-
-var cold=data[2].col
-
-
-var total=score[1]+score[2]+score[3]
-
-var confidence=Math.round(data[0].score/total*100)
-
-
-document.getElementById("result").innerHTML=
-
-"ĐÁNH: Column "+data[0].col+" & "+data[1].col+
-
-"<br>TRÁNH: Column "+data[2].col
-
-
-document.getElementById("hotcold").innerHTML=
-
-"🔥 HOT: Column "+hot+
-
-" | ❄️ COLD: Column "+cold
-
-
-document.getElementById("confidence").innerHTML=
-
-"Confidence: "+confidence+"%"
-
-
-highlight(hot,cold)
+if(getCol(history[i])==last)
+streak++
+else break
 
 }
 
+if(streak>=4){
+
+score[last]-=streak*2
+
+}
+
+var min=Math.min(score[1],score[2],score[3])
+
+for(let i=1;i<=3;i++){
+
+if(score[i]==min)
+score[i]+=4
+
+}
+
+var total=score[1]+score[2]+score[3]
+
+var p1=Math.round(score[1]/total*100)
+var p2=Math.round(score[2]/total*100)
+var p3=Math.round(score[3]/total*100)
+
+var data=[
+
+{col:1,name:"Cột 1",score:score[1],p:p1},
+{col:2,name:"Cột 2",score:score[2],p:p2},
+{col:3,name:"Cột 3",score:score[3],p:p3}
+
+]
+
+data.sort((a,b)=>b.score-a.score)
+
+document.getElementById("result").innerHTML=
+
+`
+ĐÁNH: ${data[0].name} & ${data[1].name}
+<br>
+TRÁNH: ${data[2].name}
+<br><br>
+🔥 HOT: ${data[0].name}
+<br>
+❄️ COLD: ${data[2].name}
+<br><br>
+Confidence: ${data[0].p}%
+<br>
+STREAK: ${streak}
+`
+
+highlight(data[0].col,data[2].col)
+
+drawChart(p1,p2,p3)
+
+}
 
 function highlight(win,lose){
 
@@ -277,13 +274,27 @@ document.getElementById("col1").classList.remove("win","lose")
 document.getElementById("col2").classList.remove("win","lose")
 document.getElementById("col3").classList.remove("win","lose")
 
-
 document.getElementById("col"+win).classList.add("win")
-
 document.getElementById("col"+lose).classList.add("lose")
 
 }
 
+function drawChart(p1,p2,p3){
+
+document.getElementById("chart").innerHTML=
+
+`
+Cột 1
+<div class="bar" style="width:${p1*3}px"></div>
+
+Cột 2
+<div class="bar" style="width:${p2*3}px"></div>
+
+Cột 3
+<div class="bar" style="width:${p3*3}px"></div>
+`
+
+}
 
 function reset(){
 
