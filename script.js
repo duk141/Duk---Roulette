@@ -78,6 +78,8 @@ predict(p1,p2,p3);
 
 aiAnalysis();
 
+document.getElementById("ai").innerText=aiPredictText;
+
 updateHistory();
 
 updateChart();
