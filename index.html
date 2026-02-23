@@ -215,8 +215,17 @@ grid.appendChild(d)
 
 function updateHistoryText(){
 
-document.getElementById("historyText").innerHTML =
-history.slice().reverse().join(" ")
+var text = document.getElementById("historyText")
+
+if(history.length==0){
+
+text.innerHTML="Chưa có dữ liệu"
+
+return
+
+}
+
+text.innerHTML = history.slice().reverse().join(" ")
 
 }
 
@@ -300,7 +309,6 @@ save()
 updateHistoryGrid()
 
 updateHistoryText()
-
 
 }
 
