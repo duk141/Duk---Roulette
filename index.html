@@ -117,6 +117,18 @@ font-weight:bold;
 style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
 </div>
 
+<h3>Lịch sử dạng số</h3>
+
+<div id="historyText" style="
+background:#111;
+padding:10px;
+margin:10px;
+border-radius:5px;
+color:gold;
+font-size:18px;
+word-wrap:break-word;
+"></div>
+
 <script>
 
 var history = JSON.parse(localStorage.getItem("god")) || []
@@ -163,6 +175,8 @@ save()
 
 updateHistoryGrid()
 
+updateHistoryText()
+
 }
 
 g.appendChild(d)
@@ -196,6 +210,13 @@ d.innerHTML=n
 grid.appendChild(d)
 
 })
+
+}
+
+function updateHistoryText(){
+
+document.getElementById("historyText").innerHTML =
+history.slice().reverse().join(" ")
 
 }
 
@@ -278,6 +299,9 @@ save()
 
 updateHistoryGrid()
 
+updateHistoryText()
+
+
 }
 
 
@@ -289,12 +313,15 @@ save()
 
 updateHistoryGrid()
 
+updateHistoryText()
+
 document.getElementById("result").innerHTML=""
 
 }
 
 
 updateHistoryGrid()
+updateHistoryText()
 
 </script>
 
