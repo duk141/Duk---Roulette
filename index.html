@@ -1,78 +1,293 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
-<title>Casino Roulette Predictor</title>
-
-<link rel="stylesheet" href="style.css">
-
+<title>AVIATOR AI PRO v3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+background:#0b0f1a;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+input,textarea,button{
+padding:10px;
+font-size:18px;
+margin:5px;
+}
+
+#signal{
+font-size:28px;
+margin:20px;
+font-weight:bold;
+}
+
+#cashout{
+font-size:26px;
+margin:20px;
+color:gold;
+}
+
+</style>
 
 </head>
 
 <body>
 
-<h1>CASINO ROULETTE</h1>
+<h2>AVIATOR AI PRO v3</h2>
 
-<div class="table">
-
-<div class="zero" onclick="clickNumber(0)">0</div>
-
-<div class="grid" id="grid"></div>
-
-</div>
-
-
-<div class="stats">
-
-<div class="box">
-
-Cột 1: <span id="p1">0%</span>
-
-</div>
-
-<div class="box">
-
-Cột 2: <span id="p2">0%</span>
-
-</div>
-
-<div class="box">
-
-Cột 3: <span id="p3">0%</span>
-
-</div>
-
-</div>
-
-
-<div class="predictBox">
-
-
-<span id="predict">Chưa có dữ liệu</span>
+<input id="multi" placeholder="Nhập hệ số">
+<button onclick="add()">ADD</button>
 
 <br>
-<span id="ai"></span>
 
-</div>
+<textarea id="paste" rows="6" cols="30"
+placeholder="Dán lịch sử..."></textarea>
 
+<br>
 
-<div class="historyBox">
+<button onclick="loadPaste()">LOAD HISTORY</button>
 
-<ul id="history"></ul>
+<div id="signal">---</div>
 
-</div>
+<div id="cashout"></div>
 
+<div id="info"></div>
 
 <canvas id="chart"></canvas>
 
-
-<script src="script.js"></script>
-
 <script>
 
-createGrid();
+let history=[];
+
+
+let chart=new Chart(document.getElementById("chart"),{
+
+type:'line',
+
+data:{
+labels:[],
+datasets:[{
+label:'Multiplier',
+data:[],
+borderWidth:2
+}]
+}
+
+});
+
+
+
+function add(){
+
+let m=parseFloat(multi.value);
+
+if(isNaN(m)) return;
+
+history.push(m);
+
+limit();
+
+update();
+
+}
+
+
+
+function loadPaste(){
+
+let text=paste.value.split(/\s+/);
+
+history=text.map(Number).filter(x=>!isNaN(x));
+
+limit();
+
+update();
+
+}
+
+
+
+function limit(){
+
+while(history.length>200)
+history.shift();
+
+}
+
+
+
+function update(){
+
+updateChart();
+
+analyze();
+
+}
+
+
+
+function updateChart(){
+
+chart.data.labels=history.map((_,i)=>i);
+
+chart.data.datasets[0].data=history;
+
+chart.update();
+
+}
+
+
+
+function probability(target){
+
+let hit=history.filter(x=>x>=target).length;
+
+return (hit/history.length)*100;
+
+}
+
+
+
+function average(arr){
+
+return arr.reduce((a,b)=>a+b)/arr.length;
+
+}
+
+
+
+function analyze(){
+
+let n=history.length;
+
+if(n<20){
+
+signal.innerHTML="Cần ít nhất 20 dữ liệu";
+
+return;
+
+}
+
+
+// xác suất
+
+let p15=probability(1.5);
+
+let p18=probability(1.8);
+
+let p2=probability(2);
+
+
+// trung bình
+
+let avg=average(history);
+
+let avg10=average(history.slice(-10));
+
+
+// streak đỏ
+
+let streak=0;
+
+for(let i=n-1;i>=0;i--){
+
+if(history[i]<2) streak++;
+
+else break;
+
+}
+
+
+// volatility
+
+let variance=average(history.map(x=>(x-avg)**2));
+
+
+// AI score
+
+let score=0;
+
+if(p2>50) score+=2;
+
+if(p18>60) score+=2;
+
+if(avg10>avg) score+=1;
+
+if(streak>=3) score+=1;
+
+if(variance<2) score+=1;
+
+
+
+// chọn cashout
+
+let suggest=1.40;
+
+if(score>=2) suggest=1.60;
+
+if(score>=4) suggest=1.80;
+
+if(score>=5) suggest=2.00;
+
+
+
+// confidence
+
+let confidence=Math.min(95,
+
+(p18*0.6)+(p2*0.4)-(variance*5)
+
+);
+
+
+// signal
+
+if(confidence>60){
+
+signal.innerHTML="🟢 NÊN BET";
+
+signal.style.color="lime";
+
+}else{
+
+signal.innerHTML="🔴 KHÔNG NÊN BET";
+
+signal.style.color="red";
+
+}
+
+
+
+// hiển thị
+
+cashout.innerHTML=
+
+"💰 CASHOUT ĐỀ XUẤT: "+suggest.toFixed(2)+"x<br>"+
+
+"🎯 TỶ LỆ ĐẠT: "+confidence.toFixed(0)+"%";
+
+
+
+info.innerHTML=
+
+"≥1.5x: "+p15.toFixed(0)+"%<br>"+
+
+"≥1.8x: "+p18.toFixed(0)+"%<br>"+
+
+"≥2.0x: "+p2.toFixed(0)+"%<br>"+
+
+"Streak đỏ: "+streak+"<br>"+
+
+"Volatility: "+variance.toFixed(2);
+
+
+}
+
 
 </script>
 
