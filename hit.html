@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hit Club - Dự Đoán Tài Xỉu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap');
+        
+        :root {
+            --primary: #8e2de2;
+            --secondary: #4a00e0;
+            --danger: #ff416c;
+            --success: #00b09b;
+            --warning: #ffb347;
+            --dark: #121212;
+            --light: #f8f9fa;
+            --tai: #FF4E50;
+            --xiu: #1CB5E0;
+            --card-bg: rgba(30, 30, 46, 0.9);
+            --glow: 0 0 20px 5px rgba(142, 45, 226, 0.5);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        body {
+            background: url('https://i.postimg.cc/T35VPGmh/2d5ab14f89532f6529fb2cf0f0cf4f3c.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(42, 13, 74, 0.9));
+            z-index: -1;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 22px 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin-bottom: 30px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(to right, #ffffff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .back-btn i {
+            margin-right: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .prediction-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .prediction-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light);
+            letter-spacing: 0.5px;
+            position: relative;
+            text-align: left;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .prediction-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        .phien-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 10px;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .phien-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .phien-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .prediction-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .prediction-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: var(--glow);
+            position: relative;
+            margin: 20px 0;
+            animation: pulse 2s infinite alternate;
+        }
+        
+        .prediction-label {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .prediction-main-value {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 10px 0;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .tai {
+            color: var(--tai);
+            text-shadow: 0 0 10px rgba(255, 78, 80, 0.5);
+        }
+        
+        .xiu {
+            color: var(--xiu);
+            text-shadow: 0 0 10px rgba(28, 181, 224, 0.5);
+        }
+        
+        .history-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+        
+        .history-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--light);
+            text-align: center;
+            letter-spacing: 0.5px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .history-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th {
+            padding: 14px 10px;
+            text-align: center;
+            background: rgba(142, 45, 226, 0.2);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 0.95rem;
+        }
+        
+        .history-table td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .correct {
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        .incorrect {
+            color: var(--danger);
+            font-weight: 700;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .correct .status-dot {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+        
+        .incorrect .status-dot {
+            background-color: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: var(--glow); }
+            100% { transform: scale(1.03); box-shadow: 0 0 25px 8px rgba(142, 45, 226, 0.6); }
+        }
+        
+        @media (max-width: 600px) {
+            .prediction-circle {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .prediction-title {
+                font-size: 1.5rem;
+            }
+            
+            .prediction-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .phien-box {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> QUAY LẠI</button>
+        <h1>HIT CLUB - DỰ ĐOÁN TÀI XỈU</h1>
+    </div>
+    
+    <div class="container">
+        <div class="prediction-card">
+            <div class="prediction-header">
+                <h2 class="prediction-title">DỰ ĐOÁN PHIÊN TIẾP THEO</h2>
+                <div class="phien-box">
+                    <div class="phien-label">Phiên hiện tại</div>
+                    <div class="phien-value" id="currentPhien">--</div>
+                </div>
+            </div>
+            
+            <div class="prediction-content">
+                <div class="prediction-circle">
+                    <div class="prediction-label">Dự đoán</div>
+                    <div class="prediction-main-value" id="predictionValue">--</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h3 class="history-title">LỊCH SỬ DỰ ĐOÁN</h3>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Mã phiên</th>
+                        <th>Dự đoán</th>
+                        <th>Kết quả</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <!-- History rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    if (!localStorage.getItem('accessKey')) {
+        window.location.href = 'login.html';
+    }
+
+    let historyData = [];
+    let lastPhien = null;
+    const MAX_HISTORY = 10;
+
+    function isPhienExist(phien) {
+        return historyData.some(item => item.phien === phien);
+    }
+
+    function validateData(data) {
+        return data &&
+               data.Phien &&
+               data.du_doan &&
+               ['Tài', 'Xỉu'].includes(data.du_doan) &&
+               data.Ket_qua &&
+               ['Tài', 'Xỉu'].includes(data.Ket_qua);
+    }
+
+    async function fetchPrediction() {
+        try {
+            const response = await fetch('apimd5v2.php?source=hit');
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+
+            if (validateData(data)) {
+                // Nếu phiên mới xuất hiện và chưa có trong lịch sử thì thêm vào
+                if (data.Phien !== lastPhien && !isPhienExist(data.Phien)) {
+                    updateHistory(data);   // Lưu lại phiên cũ + kết quả
+                    lastPhien = data.Phien;
+                }
+
+                // Luôn hiển thị dự đoán cho phiên kế tiếp
+                const nextPhien = parseInt(data.Phien) + 1;
+                updatePrediction(data.du_doan, nextPhien);
+            } else {
+                console.error('Invalid data format from API:', data);
+            }
+        } catch (error) {
+            console.error('Error fetching prediction:', error);
+        }
+    }
+
+    function updatePrediction(prediction, nextPhien) {
+        const predictionElement = document.getElementById('predictionValue');
+        predictionElement.textContent = prediction;
+        predictionElement.className = prediction === 'Tài'
+            ? 'prediction-main-value tai'
+            : 'prediction-main-value xiu';
+
+        // Phiên hiện tại trên giao diện là phiên sắp tới
+        document.getElementById('currentPhien').textContent = nextPhien;
+    }
+
+    function updateHistory(newData) {
+        historyData.unshift({
+            phien: newData.Phien,
+            prediction: newData.du_doan,
+            result: newData.Ket_qua,
+            isCorrect: newData.du_doan === newData.Ket_qua
+        });
+
+        if (historyData.length > MAX_HISTORY) {
+            historyData = historyData.slice(0, MAX_HISTORY);
+        }
+
+        renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+        const historyBody = document.getElementById('historyBody');
+        historyBody.innerHTML = '';
+
+        historyData.forEach(item => {
+            const row = document.createElement('tr');
+
+            const phienCell = document.createElement('td');
+            phienCell.textContent = item.phien;
+
+            const predictionCell = document.createElement('td');
+            predictionCell.textContent = item.prediction;
+            predictionCell.className = item.prediction === 'Tài' ? 'tai' : 'xiu';
+
+            const resultCell = document.createElement('td');
+            resultCell.textContent = item.result;
+            resultCell.className = item.result === 'Tài' ? 'tai' : 'xiu';
+
+            const evaluationCell = document.createElement('td');
+            if (item.isCorrect) {
+                evaluationCell.innerHTML = '<span class="status-dot"></span>ĐÚNG';
+                evaluationCell.className = 'correct';
+            } else {
+                evaluationCell.innerHTML = '<span class="status-dot"></span>SAI';
+                evaluationCell.className = 'incorrect';
+            }
+
+            row.appendChild(phienCell);
+            row.appendChild(predictionCell);
+            row.appendChild(resultCell);
+            row.appendChild(evaluationCell);
+
+            historyBody.appendChild(row);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchPrediction();
+        const refreshInterval = setInterval(fetchPrediction, 15000);
+        window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
+    });
+</script>
+</body>
+</html>
