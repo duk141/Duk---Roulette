@@ -3,105 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC79 Minimal</title>
+    <title>Baccarat AI Fixed Logic</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-        #bg-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-
-        #floating-box {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 140px; /* Nhỏ gọn hơn */
-            height: 90px;
-            background: #fff; /* Nền trắng tinh */
-            color: #000; /* Chữ đen */
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: move;
-            user-select: none;
-            z-index: 9999;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-        }
-
-        /* Dòng 1: Phiên hiện tại */
-        .phien-hien-tai { font-size: 16px; margin-bottom: 5px; color: #333; }
-        /* Dòng 2: Dự đoán */
-        .du-doan { font-size: 26px; text-transform: uppercase; color: #000; }
-        
-        /* Trạng thái Thắng/Thua (1 dòng duy nhất) */
-        .status { font-size: 24px; }
-        .win { color: #27ae60; }
-        .lose { color: #c0392b; }
+        :root { --banker: #e63946; --player: #0077b6; --tie: #2a9d8f; --bg: #111; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 10px; }
+        #board-container { background: #fff; width: 100%; max-width: 800px; height: 186px; overflow-x: auto; display: flex; border: 2px solid #444; margin-bottom: 15px; border-radius: 4px; }
+        .column { display: flex; flex-direction: column; min-width: 30px; border-right: 1px solid #eee; }
+        .cell { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee; position: relative; }
+        .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white; }
+        .B { background: var(--banker); }
+        .P { background: var(--player); }
+        .tie-line { position: absolute; width: 100%; height: 100%; background: linear-gradient(45deg, transparent 46%, var(--tie) 46%, var(--tie) 54%, transparent 54%); z-index: 2; }
+        .tie-val { position: absolute; color: #000; font-size: 9px; font-weight: bold; z-index: 3; right: 1px; bottom: 1px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; }
+        button { padding: 15px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; }
+        .btn-p { background: var(--player); }
+        .btn-b { background: var(--banker); }
+        .btn-t { background: var(--tie); }
+        .btn-reset { grid-column: span 3; background: #333; margin-top: 5px; }
+        #predict-box { width: 100%; max-width: 400px; padding: 15px; border-radius: 12px; background: #222; margin-top: 15px; text-align: center; border: 1px solid #444; }
+        .next-move { font-size: 22px; font-weight: bold; margin: 10px 0; padding: 8px; border-radius: 6px; }
+        .p-style { color: #00b4d8; border: 2px solid var(--player); }
+        .b-style { color: #ff4d4d; border: 2px solid var(--banker); }
+        .reason { font-size: 13px; color: #aaa; min-height: 38px; }
+        .badge { font-size: 11px; background: #444; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <iframe id="bg-iframe" src="https://play.lc79.bet/"></iframe>
+    <h4 style="margin: 10px 0;">BACCARAT AI - LOGIC RE-FIXED</h4>
 
-    <div id="floating-box">
-        <div id="content">Đang tải...</div>
+    <div id="board-container"></div>
+
+    <div class="controls">
+        <button class="btn-p" onclick="record('P')">PLAYER</button>
+        <button class="btn-b" onclick="record('B')">BANKER</button>
+        <button class="btn-t" onclick="record('T')">TIE</button>
+        <button class="btn-reset" onclick="resetAll()">XÓA DỮ LIỆU</button>
     </div>
 
-    <script>
-        const box = document.getElementById('floating-box');
-        const content = document.getElementById('content');
-        const proxies = [
-            'https://api.allorigins.win/get?url=',
-            'https://api.codetabs.com/v1/proxy/?quest='
-        ];
-        
-        let proxyIdx = 0;
-        let lastPred = null;
-        let isShowingResult = false;
+    <div id="predict-box">
+        <div id="current-pattern" class="badge">ĐANG DÒ CẦU...</div>
+        <div style="font-size: 11px; color: #888;">DỰ ĐOÁN TIẾP THEO</div>
+        <div id="next-bet" class="next-move">---</div>
+        <div id="reason" class="reason">Cần thêm dữ liệu kết quả thực tế.</div>
+    </div>
 
-        // Kéo thả (Mobile & PC)
-        let isDrag = false, ox, oy;
-        const start = (e) => { isDrag = true; ox = (e.clientX || e.touches[0].clientX) - box.offsetLeft; oy = (e.clientY || e.touches[0].clientY) - box.offsetTop; };
-        const move = (e) => { if(!isDrag) return; box.style.left = ((e.clientX || e.touches[0].clientX) - ox) + 'px'; box.style.top = ((e.clientY || e.touches[0].clientY) - oy) + 'px'; };
-        const end = () => isDrag = false;
+<script>
+    let history = []; 
+    let pattern = "NONE";
 
-        box.addEventListener('mousedown', start); box.addEventListener('touchstart', start);
-        document.addEventListener('mousemove', move); document.addEventListener('touchmove', move);
-        document.addEventListener('mouseup', end); document.addEventListener('touchend', end);
+    function record(type) {
+        if (type === 'T') {
+            if (history.length === 0) return;
+            let last = history[history.length - 1];
+            if (last.type === 'T') last.count++;
+            else history.push({type: 'T', count: 1});
+        } else {
+            history.push({type: type});
+        }
+        render();
+        logic();
+    }
 
-        async function update() {
-            if (isShowingResult) return;
-            try {
-                const target = 'https://lc79md5.vercel.app/lc79/md5';
-                const res = await fetch(proxies[proxyIdx] + encodeURIComponent(target));
-                let data = await res.json();
-                if (proxyIdx === 0) data = JSON.parse(data.contents);
+    function logic() {
+        const h = history.filter(x => x.type !== 'T').map(x => x.type);
+        const nextBet = document.getElementById('next-bet');
+        const reason = document.getElementById('reason');
+        const badge = document.getElementById('current-pattern');
+        const n = h.length;
 
-                // Logic so sánh kết quả phiên trước
-                if (lastPred && data.phien === lastPred.phien_hien_tai) {
-                    isShowingResult = true;
-                    const win = data.ket_qua === lastPred.du_doan;
-                    content.innerHTML = `<div class="status ${win?'win':'lose'}">${win?'THẮNG':'THUA'}</div>`;
-                    lastPred = null;
-                    setTimeout(() => { isShowingResult = false; }, 3000); // Hiện 3 giây rồi mất
-                    return;
-                }
+        if (n < 2) return;
 
-                // Hiển thị nội dung chính
-                content.innerHTML = `
-                    <div class="phien-hien-tai">${data.phien_hien_tai}</div>
-                    <div class="du-doan">${data.du_doan}</div>
-                `;
-                
-                lastPred = { phien_hien_tai: data.phien_hien_tai, du_doan: data.du_doan };
-            } catch (e) {
-                proxyIdx = (proxyIdx + 1) % proxies.length;
-            }
+        let last = h[n-1];
+        let p1 = h[n-2];
+        let p2 = h[n-3];
+        let p3 = h[n-4];
+
+        let pred = "";
+        let msg = "";
+
+        // KIỂM TRA PHÁ CẦU
+        if (pattern === "1-1" && last === p1) pattern = "NONE";
+        if (pattern === "2-2" && ( (last === p1 && p1 === p2) || (last !== p1 && p1 !== p2) )) {
+            // Phá 2-2 khi: ra cây thứ 3 giống nhau (BBB) HOẶC nhảy liên tục (B-P-B)
+            pattern = "NONE";
+        }
+        if (pattern === "BET" && last !== p1) pattern = "NONE";
+
+        // NHẬN DIỆN CẦU NGHIÊM NGẶT
+        // 1. Cầu Bệt (Ít nhất 3 cây giống nhau)
+        if (last === p1 && p1 === p2) {
+            pattern = "BET";
+            pred = last;
+            msg = "Cầu Bệt: Đang bệt " + last + ", bám dây ngay!";
+        }
+        // 2. Cầu 1-1 (Ít nhất nhịp B-P-B hoặc P-B-P)
+        else if (n >= 3 && last !== p1 && p1 !== p2) {
+            pattern = "1-1";
+            pred = last === 'P' ? 'B' : 'P';
+            msg = "Cầu 1-1: Nhịp nhảy BPB ổn định, đánh đối nghịch.";
+        }
+        // 3. Cầu 2-2 (Ít nhất nhịp BB-P hoặc PP-B)
+        else if (n >= 3 && last !== p1 && p1 === p2) {
+            pattern = "2-2";
+            pred = last; // Đánh cây thứ 2 cho đủ cặp
+            msg = "Cầu 2-2: Vừa đổi màu, đánh cùng màu để đủ cặp.";
+        }
+        // Cầu 2-2 tiếp diễn (Đã đủ cặp BB-PP, giờ dự đoán sang cặp mới)
+        else if (pattern === "2-2" && last === p1) {
+            pred = last === 'P' ? 'B' : 'P';
+            msg = "Cầu 2-2: Đã đủ cặp, dự đoán đổi màu sang cặp mới.";
+        }
+        // Mặc định dò cầu
+        else {
+            pred = last; 
+            msg = "Đang chờ form cầu rõ ràng (1-1, 2-2 hoặc Bệt).";
         }
 
-        setInterval(update, 3000);
-        update();
-    </script>
+        badge.innerText = "TRẠNG THÁI: " + (pattern === "NONE" ? "DÒ CẦU" : "CẦU " + pattern);
+        nextBet.innerText = pred === 'P' ? "PLAYER" : "BANKER";
+        nextBet.className = `next-move ${pred === 'P' ? 'p-style' : 'b-style'}`;
+        reason.innerText = msg;
+    }
+
+    function render() {
+        const container = document.getElementById('board-container');
+        container.innerHTML = '';
+        let columns = [];
+        let cur = [];
+        let lastS = null;
+
+        history.forEach(item => {
+            if (item.type !== 'T') {
+                if (item.type !== lastS) {
+                    if (cur.length > 0) columns.push(cur);
+                    cur = [{side: item.type, ties: 0}];
+                    lastS = item.type;
+                } else {
+                    cur.push({side: item.type, ties: 0});
+                }
+            } else if (cur.length > 0) {
+                cur[cur.length - 1].ties += item.count;
+            }
+        });
+        if (cur.length > 0) columns.push(cur);
+
+        columns.forEach(col => {
+            let colDiv = document.createElement('div');
+            colDiv.className = 'column';
+            for (let i = 0; i < 6; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'cell';
+                if (col[i]) {
+                    let dot = document.createElement('div');
+                    dot.className = `dot ${col[i].side}`;
+                    dot.innerText = col[i].side;
+                    if (col[i].ties > 0) {
+                        let line = document.createElement('div');
+                        line.className = 'tie-line';
+                        cell.appendChild(line);
+                        if (col[i].ties > 1) {
+                            let v = document.createElement('div');
+                            v.className = 'tie-val';
+                            v.innerText = col[i].ties;
+                            cell.appendChild(v);
+                        }
+                    }
+                    cell.appendChild(dot);
+                }
+                colDiv.appendChild(cell);
+            }
+            container.appendChild(colDiv);
+        });
+        container.scrollLeft = container.scrollWidth;
+    }
+
+    function resetAll() {
+        history = []; pattern = "NONE"; render();
+        document.getElementById('next-bet').innerText = "---";
+        document.getElementById('next-bet').className = "next-move";
+        document.getElementById('reason').innerText = "Đã xóa dữ liệu.";
+        document.getElementById('current-pattern').innerText = "ĐANG DÒ CẦU...";
+    }
+</script>
 </body>
 </html>
