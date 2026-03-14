@@ -79,6 +79,122 @@ logic();
 
 }
 
+function detectPattern(h){
+
+const n = h.length;
+
+let last = h[n-1];
+let p1 = h[n-2];
+let p2 = h[n-3];
+let p3 = h[n-4];
+let p4 = h[n-5];
+let p5 = h[n-6];
+
+
+// 1 BỆT
+if(last===p1 && p1===p2)
+return {pattern:"BET",pred:last,msg:"Cầu bệt"};
+
+
+
+// 2 BỆT DÀI
+if(n>=4 && last===p1 && p1===p2 && p2===p3)
+return {pattern:"LONG BET",pred:last,msg:"Bệt dài"};
+
+
+
+// 3 1-1
+if(n>=3 && last!==p1 && p1!==p2)
+return {pattern:"1-1",pred:last==="P"?"B":"P",msg:"Cầu nhảy"};
+
+
+
+// 4 2-2
+if(n>=3 && last!==p1 && p1===p2)
+return {pattern:"2-2",pred:last,msg:"Cầu đôi"};
+
+
+// 5 3-1
+if(n>=4 && last===p1 && p1===p2 && p3!==p2)
+return {pattern:"3-1",pred:last==="P"?"B":"P",msg:"3-1 đảo"};
+
+
+
+// 6 3-3
+if(n>=6 &&
+h[n-1]===h[n-2] &&
+h[n-2]===h[n-3] &&
+h[n-4]===h[n-5] &&
+h[n-5]===h[n-6])
+return {pattern:"3-3",pred:last,msg:"Chu kỳ 3"};
+
+
+
+// 7 1-2
+if(n>=3 && last===p1 && p2!==p1)
+return {pattern:"1-2",pred:last==="P"?"B":"P",msg:"1-2"};
+
+
+
+// 8 2-1
+if(n>=3 && last!==p1 && p1===p2)
+return {pattern:"2-1",pred:last,msg:"2-1"};
+
+
+// 9 ZigZag
+if(n>=4 && last!==p1 && p1===p2 && p2!==p3)
+return {pattern:"ZIGZAG",pred:p1,msg:"zigzag"};
+
+
+
+// 10 đảo sau bệt
+if(n>=4 && last===p1 && p1===p2 && p2===p3)
+return {pattern:"BET BREAK",pred:last==="P"?"B":"P",msg:"bệt sắp gãy"};
+
+
+
+// 11 pingpong dài
+if(n>=5 && h[n-1]!==h[n-2] && h[n-2]!==h[n-3] && h[n-3]!==h[n-4])
+return {pattern:"PINGPONG",pred:last==="P"?"B":"P",msg:"nhảy liên tục"};
+
+
+
+// 12 4-4
+if(n>=8 &&
+h[n-1]===h[n-2] &&
+h[n-2]===h[n-3] &&
+h[n-3]===h[n-4] &&
+h[n-5]===h[n-6] &&
+h[n-6]===h[n-7] &&
+h[n-7]===h[n-8])
+return {pattern:"4-4",pred:last,msg:"chu kỳ 4"};
+
+
+
+// 13 5 bệt
+if(n>=5 && last===p1 && p1===p2 && p2===p3 && p3===p4)
+return {pattern:"5BET",pred:last,msg:"bệt 5"};
+
+
+
+// 14 đảo sau 5
+if(n>=5 && last===p1 && p1===p2 && p2===p3 && p3===p4)
+return {pattern:"BREAK5",pred:last==="P"?"B":"P",msg:"sắp đảo"};
+
+
+
+// 15 thống kê tổng
+let pCount = h.filter(x=>x==="P").length;
+let bCount = h.filter(x=>x==="B").length;
+
+return {
+pattern:"STATS",
+pred:pCount>bCount?"P":"B",
+msg:"AI thống kê"
+};
+
+}
+
 function logic(){
 
 const h = history.filter(x => x.type !== 'T').map(x => x.type);
@@ -87,183 +203,21 @@ const nextBet=document.getElementById('next-bet');
 const reason=document.getElementById('reason');
 const badge=document.getElementById('current-pattern');
 
-const n=h.length;
+if(h.length<2) return;
 
-if(n<2) return;
+const result = detectPattern(h);
 
-let last=h[n-1];
-let p1=h[n-2];
-let p2=h[n-3];
-let p3=h[n-4];
-let p4=h[n-5];
-let p5=h[n-6];
+pattern = result.pattern;
 
-let pred="";
-let msg="";
+let pred = result.pred;
 
+badge.innerText="TRẠNG THÁI: "+pattern;
 
-// =================
-// KIỂM TRA PHÁ CẦU
-// =================
+nextBet.innerText = pred==="P" ? "PLAYER":"BANKER";
 
-if(pattern==="1-1" && last===p1){
+nextBet.className=`next-move ${pred==="P"?"p-style":"b-style"}`;
 
-pattern="NONE";
-
-}
-
-if(pattern==="2-2" && ((last===p1 && p1===p2) || (last!==p1 && p1!==p2))){
-
-pattern="NONE";
-
-}
-
-if(pattern==="BET" && last!==p1){
-
-pattern="NONE";
-
-}
-
-
-// =================
-// NHẬN DIỆN CẦU
-// =================
-
-
-// Cầu bệt
-if(last===p1 && p1===p2){
-
-pattern="BET";
-
-pred=last;
-
-msg="Cầu bệt - bám chuỗi";
-
-}
-
-
-// Cầu 1-1
-else if(n>=3 && last!==p1 && p1!==p2){
-
-pattern="1-1";
-
-pred = last==="P" ? "B":"P";
-
-msg="Cầu 1-1";
-
-}
-
-
-// Cầu 2-2
-else if(n>=3 && last!==p1 && p1===p2){
-
-pattern="2-2";
-
-pred=last;
-
-msg="Cầu 2-2";
-
-}
-
-
-// Cầu 2-2 tiếp diễn
-else if(pattern==="2-2" && last===p1){
-
-pred = last==="P" ? "B":"P";
-
-msg="Cầu 2-2 tiếp diễn";
-
-}
-
-
-// Cầu 3-1
-else if(n>=4 && last===p1 && p1===p2 && p3!==p2){
-
-pattern="3-1";
-
-pred = last==="P" ? "B":"P";
-
-msg="Cầu 3-1";
-
-}
-
-
-// Cầu 3-3
-else if(
-
-n>=6 &&
-
-h[n-1]===h[n-2] &&
-h[n-2]===h[n-3] &&
-h[n-4]===h[n-5] &&
-h[n-5]===h[n-6] &&
-h[n-3]!==h[n-4]
-
-){
-
-pattern="3-3";
-
-pred=last;
-
-msg="Cầu 3-3";
-
-}
-
-
-// Cầu 1-2
-else if(n>=3 && last===p1 && p2!==p1){
-
-pattern="1-2";
-
-pred = last==="P" ? "B":"P";
-
-msg="Cầu 1-2";
-
-}
-
-
-// =================
-// AI THỐNG KÊ MARKOV
-// =================
-
-else{
-
-let pCount = h.filter(x=>x==="P").length;
-let bCount = h.filter(x=>x==="B").length;
-
-let pb=0;
-let bp=0;
-
-for(let i=1;i<h.length;i++){
-
-if(h[i-1]=="P" && h[i]=="B") pb++;
-
-if(h[i-1]=="B" && h[i]=="P") bp++;
-
-}
-
-if(pb>bp){
-
-pred="B";
-msg="AI Markov: P→B cao";
-
-}
-
-else if(bp>pb){
-
-pred="P";
-msg="AI Markov: B→P cao";
-
-}
-
-else{
-
-pred = pCount>bCount ? "P":"B";
-msg="AI thống kê tổng";
-
-}
-
-pattern="AI";
+reason.innerText=result.msg;
 
 }
 
