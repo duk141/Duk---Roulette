@@ -39,6 +39,7 @@
         <button class="btn-p" onclick="record('P')">PLAYER</button>
         <button class="btn-b" onclick="record('B')">BANKER</button>
         <button class="btn-t" onclick="record('T')">TIE</button>
+        <button onclick="undo()" style="background:#f4a261;">XÓA 1</button>
         <button class="btn-reset" onclick="resetAll()">XÓA DỮ LIỆU</button>
     </div>
 
@@ -65,6 +66,18 @@
         render();
         logic();
     }
+
+function undo(){
+
+if(history.length===0) return;
+
+history.pop();
+
+render();
+
+logic();
+
+}
 
 function logic(){
 
