@@ -100,7 +100,34 @@ let p5=h[n-6];
 
 let pred="";
 let msg="";
+
+
+// =================
+// KIỂM TRA PHÁ CẦU
+// =================
+
+if(pattern==="1-1" && last===p1){
+
 pattern="NONE";
+
+}
+
+if(pattern==="2-2" && ((last===p1 && p1===p2) || (last!==p1 && p1!==p2))){
+
+pattern="NONE";
+
+}
+
+if(pattern==="BET" && last!==p1){
+
+pattern="NONE";
+
+}
+
+
+// =================
+// NHẬN DIỆN CẦU
+// =================
 
 
 // Cầu bệt
@@ -135,6 +162,16 @@ pattern="2-2";
 pred=last;
 
 msg="Cầu 2-2";
+
+}
+
+
+// Cầu 2-2 tiếp diễn
+else if(pattern==="2-2" && last===p1){
+
+pred = last==="P" ? "B":"P";
+
+msg="Cầu 2-2 tiếp diễn";
 
 }
 
@@ -185,13 +222,15 @@ msg="Cầu 1-2";
 }
 
 
-// AI thống kê
+// =================
+// AI THỐNG KÊ MARKOV
+// =================
+
 else{
 
 let pCount = h.filter(x=>x==="P").length;
 let bCount = h.filter(x=>x==="B").length;
 
-// Markov transition
 let pb=0;
 let bp=0;
 
@@ -203,19 +242,20 @@ if(h[i-1]=="B" && h[i]=="P") bp++;
 
 }
 
-// quyết định dự đoán
-if(pb > bp){
+if(pb>bp){
 
 pred="B";
 msg="AI Markov: P→B cao";
 
 }
-else if(bp > pb){
+
+else if(bp>pb){
 
 pred="P";
 msg="AI Markov: B→P cao";
 
 }
+
 else{
 
 pred = pCount>bCount ? "P":"B";
@@ -224,6 +264,21 @@ msg="AI thống kê tổng";
 }
 
 pattern="AI";
+
+}
+
+
+// =================
+// HIỂN THỊ
+// =================
+
+badge.innerText="TRẠNG THÁI: "+(pattern==="NONE"?"DÒ CẦU":pattern);
+
+nextBet.innerText = pred==="P" ? "PLAYER":"BANKER";
+
+nextBet.className=`next-move ${pred==="P" ? "p-style":"b-style"}`;
+
+reason.innerText=msg;
 
 }
 
