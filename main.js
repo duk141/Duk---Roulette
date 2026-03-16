@@ -57,3 +57,30 @@ heatmap()
 chartUpdate()
 
 }
+
+function showHistory(){
+
+let html=""
+
+history.forEach(v=>{
+
+if(v=="H")
+html+="<span style='color:green'>H </span>"
+
+else if(v=="L")
+html+="<span style='color:blue'>L </span>"
+
+else
+html+="<span style='color:gray'>S </span>"
+
+})
+
+document.getElementById("history").innerHTML=html
+
+}
+
+function update(){
+
+showHistory()
+
+}
