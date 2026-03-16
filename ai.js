@@ -11,8 +11,26 @@ m[a][b]++
 
 }
 
-let last=history[history.length-1]
+return m[history[history.length-1]]
 
-return m[last]
+}
+
+function aiPredict(){
+
+let m=markov()
+
+let result
+
+if(m.H>m.L)
+
+result="HIGH"
+
+else
+
+result="LOW"
+
+document.getElementById("predict").innerText=
+
+"AI Prediction: "+result
 
 }
