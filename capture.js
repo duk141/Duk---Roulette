@@ -25,3 +25,32 @@ update()
 }
 
 setInterval(autoReadGame,3000)
+
+async function scan(){
+
+let file=document.getElementById("img").files[0]
+
+if(!file) return
+
+const worker=Tesseract.createWorker()
+
+await worker.load()
+
+await worker.loadLanguage("eng")
+
+await worker.initialize("eng")
+
+const {data:{text}}=
+await worker.recognize(file)
+
+let arr=text
+.replace(/[^HL]/g,"")
+.split("")
+
+history=arr
+
+update()
+
+await worker.terminate()
+
+}
