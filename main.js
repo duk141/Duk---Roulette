@@ -3,7 +3,6 @@ let history=[]
 function add(v){
 
 history.push(v)
-
 update()
 
 }
@@ -11,7 +10,6 @@ update()
 function skip(){
 
 history.push("S")
-
 update()
 
 }
@@ -19,7 +17,6 @@ update()
 function reset(){
 
 history=[]
-
 update()
 
 }
@@ -29,7 +26,6 @@ function paste(){
 navigator.clipboard.readText().then(t=>{
 
 t=t.replace(/[^HL]/g,'')
-
 history=t.split("")
 
 update()
@@ -41,19 +37,12 @@ update()
 function update(){
 
 showHistory()
-
 detectPattern()
-
 aiPredict()
-
 trend()
-
 bigRoad()
-
 smallRoad()
-
 heatmap()
-
 chartUpdate()
 
 }
@@ -76,11 +65,5 @@ html+="<span style='color:gray'>S </span>"
 })
 
 document.getElementById("history").innerHTML=html
-
-}
-
-function update(){
-
-showHistory()
 
 }
