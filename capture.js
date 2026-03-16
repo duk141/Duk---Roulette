@@ -23,3 +23,5 @@ update()
 }
 
 }
+
+setInterval(autoReadGame,3000)
