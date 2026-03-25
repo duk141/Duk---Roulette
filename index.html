@@ -324,8 +324,8 @@ return seed / 4294967296;
 }
 
 // xác định khoảng
-let min = (result==="TÀI") ? 11 : 3;
-let max = (result==="TÀI") ? 18 : 10;
+let min = (result==="TÀI") ? 11 : 4;
+let max = (result==="TÀI") ? 17 : 10;
 
 // tạo list số
 let nums = [];
@@ -407,7 +407,7 @@ document.getElementById("result").innerText=result;
 let top3 = predictTop3(md5, result);
 if(mode==="vip"){
 let baseSeed = parseInt(md5.substring(0,6),16);
-let min = (result==="TÀI") ? 11 : 3;
+let min = (result==="TÀI") ? 11 : 4;
 
 let n1 = (baseSeed % 8) + min;
 let n2 = ((baseSeed >> 3) % 8) + min;
