@@ -1,297 +1,505 @@
 <!DOCTYPE html>
-<html lang="vi">
-
+<html>
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>HILO AI PRO</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MD5 PRO — DUK</title>
 
 <style>
-
 body{
-background:#0f172a;
-color:white;
+margin:0;
 font-family:Arial;
+background:linear-gradient(270deg,#02030a,#040a1f,#000000,#040a1f);
+background-size:600% 600%;
+animation:bgMove 12s ease infinite;
+color:white;
 text-align:center;
-padding:20px;
+overflow:hidden;
 }
 
-button{
-padding:12px 18px;
-font-size:18px;
-margin:5px;
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+
+/* ===== FIREWORK ===== */
+#fireworks{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:0;
+}
+
+/* ===== HEADER ===== */
+.header{
+padding:18px;
+font-size:24px;
+font-weight:bold;
+background:rgba(0,0,0,0.4);
+backdrop-filter:blur(10px);
+color:#00f7ff;
+text-shadow:0 0 15px #00f7ff,0 0 40px #00f7ff;
+}
+
+/* ===== MODE NEON ===== */
+.modeBox{
+margin-top:10px;
+padding:10px 20px;
+border-radius:14px;
+font-size:15px;
+font-weight:bold;
+letter-spacing:1px;
+display:inline-block;
+min-width:160px;
+transition:0.3s;
+}
+
+/* VIP */
+.mode-vip{
+color:#ffd700;
+background:rgba(255,215,0,0.08);
+box-shadow:
+0 0 12px #ffd700,
+0 0 30px rgba(255,215,0,0.6),
+inset 0 0 12px #ffd700;
+text-shadow:0 0 10px #ffd700,0 0 20px #ffd700;
+}
+
+/* BASIC */
+.mode-basic{
+color:#00f7ff;
+background:rgba(0,247,255,0.08);
+box-shadow:
+0 0 12px #00f7ff,
+0 0 30px rgba(0,247,255,0.6),
+inset 0 0 12px #00f7ff;
+text-shadow:0 0 10px #00f7ff,0 0 20px #00f7ff;
+}
+
+/* ===== BOX ===== */
+.box{
+margin:12px;
+padding:15px;
+border-radius:16px;
+background:rgba(0,0,0,0.35);
+backdrop-filter:blur(14px);
+box-shadow:0 0 25px rgba(0,255,255,0.35);
+}
+
+/* ===== INPUT ===== */
+input{
+width:90%;
+padding:12px;
 border:none;
-border-radius:8px;
+border-radius:10px;
+background:#000;
+color:#00f7ff;
+text-align:center;
+font-size:16px;
+box-shadow:0 0 10px #00f7ff inset;
+}
+
+/* ===== BUTTON ===== */
+button{
+margin-top:10px;
+padding:12px 18px;
+border:none;
+border-radius:10px;
+font-weight:bold;
 cursor:pointer;
 }
 
-.high{background:#16a34a}
-.low{background:#2563eb}
-.reset{background:#dc2626}
-.clip{background:#9333ea}
-
-.box{
-background:#1e293b;
-padding:15px;
-border-radius:10px;
-margin-top:15px;
+.mainBtn{
+background:#001f2b;
+color:#00f7ff;
+box-shadow:0 0 10px #00f7ff;
 }
 
-#history{
-font-size:18px;
-word-wrap:break-word;
+.vipBtn{
+background:#2b2100;
+color:#ffd700;
+box-shadow:0 0 12px #ffd700;
 }
 
-#predict{
-font-size:32px;
+.ok{background:#00c853;}
+.fail{background:#ff1744;}
+
+.big{
+font-size:50px;
 font-weight:bold;
+color:#00f7ff;
+text-shadow:0 0 20px #00f7ff;
+}
+
+.bar{
+height:10px;
+background:#222;
+border-radius:10px;
+margin-top:10px;
+overflow:hidden;
+}
+
+.fill{
+height:100%;
+background:linear-gradient(90deg,#ff3d00,#00f7ff);
+width:50%;
+transition:0.5s;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+padding:4px 10px;
+font-size:14px;
+}
+
+.history{
+font-size:13px;
+text-align:left;
+max-height:140px;
+overflow:auto;
+}
+
+/* ===== RADAR SCAN ===== */
+.radarBox{
+display:none;
 margin-top:10px;
 }
 
-.cell{
-display:inline-block;
-width:18px;
-height:18px;
-margin:2px;
-border-radius:4px;
+.radar{
+width:120px;
+height:120px;
+border-radius:50%;
+margin:10px auto;
+position:relative;
+background:radial-gradient(circle, rgba(0,255,255,0.15) 0%, rgba(0,0,0,0.8) 70%);
+box-shadow:0 0 20px #00f7ff inset, 0 0 25px #00f7ff;
+overflow:hidden;
 }
 
-.h{background:#16a34a}
-.l{background:#2563eb}
+.radar::after{
+content:"";
+position:absolute;
+width:100%;
+height:100%;
+background:conic-gradient(rgba(0,255,255,0.6) 0deg, transparent 60deg);
+animation:scan 1s linear infinite;
+}
 
+@keyframes scan{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
+}
+
+.scanText{
+color:#00f7ff;
+font-size:13px;
+text-shadow:0 0 10px #00f7ff;
+}
+
+/* ===== MAINTENANCE ===== */
+#maintenanceBox{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#000;
+display:none;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+z-index:9999;
+color:#00f7ff;
+text-shadow:0 0 20px #00f7ff;
+}
+
+.maintTitle{
+font-size:28px;
+margin-bottom:10px;
+}
+
+.maintSub{
+font-size:14px;
+opacity:0.7;
+}
 </style>
-
 </head>
 
 <body>
+<canvas id="fireworks"></canvas>
 
-<h2>HILO AI PRO</h2>
+<!-- MAINTENANCE -->
+<div id="maintenanceBox">
+<div class="maintTitle">⚙ HỆ THỐNG ĐANG BẢO TRÌ</div>
+<div class="maintSub">Vui lòng quay lại sau...</div>
+</div>
 
-<button class="high" onclick="add('H')">HIGH</button>
-<button class="low" onclick="add('L')">LOW</button>
-<button class="clip" onclick="paste()">PASTE</button>
-<button class="reset" onclick="reset()">RESET</button>
+<div class="header">MD5 PRO — DUK</div>
 
 <div class="box">
-<div id="history"></div>
+<button class="vipBtn" onclick="setMode('vip')">VIP</button>
+<button class="mainBtn" onclick="setMode('basic')">BASIC</button>
+<div id="modeText" class="modeBox mode-vip">👑 VIP MODE</div>
 </div>
 
 <div class="box">
-<div id="pattern"></div>
-<div id="percent"></div>
-<div id="trend"></div>
+<input id="md5" placeholder="Nhập MD5 32 ký tự">
+<br>
+<button class="mainBtn" id="analyzeBtn" onclick="analyze()">PHÂN TÍCH</button>
+
+<!-- RADAR -->
+<div class="radarBox" id="radarBox">
+<div class="radar"></div>
+<div class="scanText">AI SCAN: <span id="scanPercent">0</span>%</div>
+<div class="bar"><div class="fill" id="scanBar" style="width:0%"></div></div>
+</div>
+
+<div id="loading"></div>
 </div>
 
 <div class="box">
-<div id="predict"></div>
+<div>DỰ ĐOÁN</div>
+<div class="row">
+<span>TOP 3 SỐ: <span id="top3">--</span></span>
+</div>
+<div class="big" id="result">--</div>
+<div class="bar"><div class="fill" id="bar"></div></div>
+
+<div class="row">
+<span>TÀI: <span id="tai">50</span>%</span>
+<span>XỈU: <span id="xiu">50</span>%</span>
+</div>
+
+<button class="ok" id="btnOk" onclick="mark(true)" disabled>✓ ĐÚNG</button>
+<button class="fail" id="btnFail" onclick="mark(false)" disabled>✗ SAI</button>
+
+<div id="stats">ĐÚNG: 0 | SAI: 0</div>
 </div>
 
 <div class="box">
-<div id="heatmap"></div>
+<div class="row">
+<span>PHÂN TÍCH THUẬT TOÁN</span>
+<span id="conf">0%</span>
+</div>
 </div>
 
 <div class="box">
-<canvas id="chart"></canvas>
+<div class="row">
+<span>MAY MẮN</span>
+<span id="lucky">0</span>
+</div>
+</div>
+
+<div class="box">
+<div class="row">
+<span>TỶ LỆ THẮNG</span>
+<span id="winrate">50%</span>
+</div>
+</div>
+
+<div class="box">
+<div>LỊCH SỬ (20)</div>
+<div class="history" id="history"></div>
 </div>
 
 <script>
-
+let correct=0, wrong=0;
 let history=[];
-let chart;
+let win_count=0;
+let total_count=0;
+let mode="vip";
 
-function add(v){
+function predictTop3(md5, result){
+let seed = parseInt(md5.substring(8,16),16);
 
-history.push(v);
-
-update();
-
+// RNG deterministic
+function rand(){
+seed = (seed * 1664525 + 1013904223) % 4294967296;
+return seed / 4294967296;
 }
 
-function reset(){
+// xác định khoảng
+let min = (result==="TÀI") ? 11 : 3;
+let max = (result==="TÀI") ? 18 : 10;
 
-history=[];
+// tạo list số
+let nums = [];
+for(let i=min;i<=max;i++) nums.push(i);
 
-update();
-
+// shuffle theo seed
+for(let i=nums.length-1;i>0;i--){
+let j = Math.floor(rand()*(i+1));
+[nums[i],nums[j]]=[nums[j],nums[i]];
 }
 
-async function paste(){
-
-let text=await navigator.clipboard.readText();
-
-text=text.replace(/[^HL]/g,'');
-
-history=text.split('');
-
-update();
-
+// lấy 3 số đầu
+return nums.slice(0,3);
 }
 
-function update(){
+function setMode(m){
+mode=m;
 
-showHistory();
-percent();
-pattern();
-trend();
-predict();
-heatmap();
-chartUpdate();
+let box=document.getElementById("modeText");
 
-}
-
-function showHistory(){
-
-document.getElementById("history").innerHTML=
-"History: "+history.join(" ");
-
-}
-
-function percent(){
-
-let h=history.filter(x=>x=="H").length;
-
-let l=history.filter(x=>x=="L").length;
-
-let t=history.length;
-
-if(t==0)return;
-
-let ph=(h/t*100).toFixed(1);
-let pl=(l/t*100).toFixed(1);
-
-document.getElementById("percent").innerHTML=
-"High "+ph+"% | Low "+pl+"%";
-
-}
-
-function trend(){
-
-let last=history.slice(-10);
-
-let h=last.filter(x=>x=="H").length;
-
-let l=last.filter(x=>x=="L").length;
-
-let t="Sideway";
-
-if(h>l) t="Trend High";
-if(l>h) t="Trend Low";
-
-document.getElementById("trend").innerHTML="Trend: "+t;
-
-}
-
-function pattern(){
-
-let s=history.join("");
-
-let p="Hỗn loạn";
-
-if(/H{6,}/.test(s)) p="Cầu bệt High";
-else if(/L{6,}/.test(s)) p="Cầu bệt Low";
-else if(/(HL){4,}/.test(s)) p="Cầu 1-1";
-else if(/HHLLHHLL/.test(s)) p="Cầu 2-2";
-else if(/HHHLLL/.test(s)) p="Cầu 3-3";
-else if(/HHHHLL/.test(s)) p="Cầu 4-2";
-else if(/LLHHLL/.test(s)) p="Cầu đảo";
-else if(/HLH/.test(s)) p="Cầu zigzag";
-else if(/HHHL/.test(s)) p="Gãy High";
-else if(/LLLH/.test(s)) p="Gãy Low";
-
-document.getElementById("pattern").innerHTML=
-"Pattern: "+p;
-
-}
-
-function predict(){
-
-if(history.length<5)return;
-
-let m={
-H:{H:0,L:0},
-L:{H:0,L:0}
-};
-
-for(let i=0;i<history.length-1;i++){
-
-let a=history[i];
-let b=history[i+1];
-
-m[a][b]++;
-
-}
-
-let last=history[history.length-1];
-
-let h=m[last].H;
-let l=m[last].L;
-
-let signal="--";
-
-if(h>l) signal="HIGH";
-if(l>h) signal="LOW";
-
-document.getElementById("predict").innerHTML=
-"AI Prediction: "+signal;
-
-}
-
-function heatmap(){
-
-let html="";
-
-history.forEach(x=>{
-
-if(x=="H")
-html+='<div class="cell h"></div>';
-else
-html+='<div class="cell l"></div>';
-
-});
-
-document.getElementById("heatmap").innerHTML=html;
-
-}
-
-function chartUpdate(){
-
-let h=history.filter(x=>x=="H").length;
-let l=history.filter(x=>x=="L").length;
-
-if(!chart){
-
-chart=new Chart(
-
-document.getElementById("chart"),
-
-{
-type:'pie',
-
-data:{
-labels:['High','Low'],
-datasets:[{
-data:[h,l]
-}]
-}
-
-});
-
+if(m==="vip"){
+box.className="modeBox mode-vip";
+box.innerText="👑 VIP MODE";
 }else{
-
-chart.data.datasets[0].data=[h,l];
-
-chart.update();
-
+box.className="modeBox mode-basic";
+box.innerText="⚡ BASIC MODE";
+}
 }
 
+function analyze(){
+
+let md5=document.getElementById("md5").value.trim().toLowerCase();
+if(md5.length!=32){alert("MD5 phải đủ 32 ký tự");return;}
+
+document.getElementById("analyzeBtn").disabled=true;
+document.getElementById("radarBox").style.display="block";
+// ===== AI SCAN PROGRESS =====
+let percentScan=0;
+let scanBar=document.getElementById("scanBar");
+let scanText=document.getElementById("scanPercent");
+
+let scanInterval=setInterval(()=>{
+percentScan+=5;
+scanBar.style.width=percentScan+"%";
+scanText.innerText=percentScan;
+
+if(percentScan>=100){
+clearInterval(scanInterval);
+}
+},60);
+
+setTimeout(()=>{
+
+document.getElementById("radarBox").style.display="none";
+
+let result, confidence;
+
+if(mode==="vip"){
+let last=parseInt(md5.slice(-1),16);
+result = last%2==0 ? "TÀI":"XỈU";
+confidence = Math.floor(Math.random()*10)+85;
+}else{
+result = Math.random()<0.5 ? "TÀI":"XỈU";
+confidence = Math.floor(Math.random()*20)+50;
 }
 
+let hexValue = parseInt(md5.substring(28,32),16);
+
+let base = (mode==="vip") ? 70 : 55;
+let range = (mode==="vip") ? 21 : 31;
+
+let tai_percent = base + (hexValue % range);
+let xiu_percent = 100 - tai_percent;
+
+let lucky=parseInt(md5.substring(0,2),16)%100;
+let winrate = total_count>0 ? Math.floor((win_count/total_count)*100) : 50;
+
+document.getElementById("result").innerText=result;
+let top3 = predictTop3(md5, result);
+if(mode==="vip"){
+let baseSeed = parseInt(md5.substring(0,6),16);
+let min = (result==="TÀI") ? 11 : 3;
+
+let n1 = (baseSeed % 8) + min;
+let n2 = ((baseSeed >> 3) % 8) + min;
+let n3 = ((baseSeed >> 6) % 8) + min;
+
+let set = [...new Set([n1,n2,n3])];
+while(set.length < 3){
+set.push(((baseSeed >> (set.length*2)) % 8) + min);
+}
+
+top3 = set.slice(0,3);
+}
+top3.sort((a,b)=>a-b);
+
+document.getElementById("top3").innerText = top3.join(" - ");
+document.getElementById("tai").innerText=tai_percent;
+document.getElementById("xiu").innerText=xiu_percent;
+document.getElementById("bar").style.width=tai_percent+"%";
+document.getElementById("conf").innerText=confidence+"%";
+document.getElementById("lucky").innerText=lucky;
+document.getElementById("winrate").innerText=winrate+"%";
+
+document.getElementById("btnOk").disabled=false;
+document.getElementById("btnFail").disabled=false;
+
+history.unshift(result+" | "+md5.substring(0,6));
+if(history.length>20) history.pop();
+document.getElementById("history").innerHTML=history.join("<br>");
+
+document.getElementById("analyzeBtn").disabled=false;
+
+},1200);
+}
+
+function mark(ok){
+total_count++;
+if(ok){correct++; win_count++;} else wrong++;
+
+document.getElementById("stats").innerText="ĐÚNG: "+correct+" | SAI: "+wrong;
+document.getElementById("winrate").innerText=Math.floor((win_count/total_count)*100)+"%";
+
+document.getElementById("btnOk").disabled=true;
+document.getElementById("btnFail").disabled=true;
+}
+
+/* FIREWORK */
+let canvas=document.getElementById("fireworks");
+let ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+function firework(){
+let x=Math.random()*canvas.width;
+let y=canvas.height;
+for(let i=0;i<40;i++){
+particles.push({
+x:x,
+y:y,
+vx:(Math.random()-0.5)*4,
+vy:-Math.random()*6-2,
+life:60
+});
+}
+}
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles.forEach((p,i)=>{
+p.x+=p.vx;
+p.y+=p.vy;
+p.life--;
+ctx.fillStyle="cyan";
+ctx.fillRect(p.x,p.y,2,2);
+if(p.life<=0) particles.splice(i,1);
+});
+requestAnimationFrame(animate);
+}
+
+setInterval(firework,1200);
+animate();
+/* ===== MAINTENANCE CONTROL ===== */
+function enableMaintenance(){
+document.getElementById("maintenanceBox").style.display="flex";
+}
+
+function disableMaintenance(){
+document.getElementById("maintenanceBox").style.display="none";
+}
+disableMaintenance();
 </script>
 
 </body>
-
 </html>
