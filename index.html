@@ -1,17 +1,42 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <title>Sicbo AI Learning</title>
 
 <style>
-body{
+html, body{
     margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+}
+
+/* BODY FULL SCREEN */
+body{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+
+    min-height:100vh;
+
     background:
         radial-gradient(circle at 30% 20%, #00ffd522, transparent 40%),
         radial-gradient(circle at 70% 80%, #00ff9c22, transparent 40%),
         #020617;
+
     color:#fff;
+    font-family:sans-serif;
+}
+
+/* APP WRAPPER */
+.app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    padding:12px 10px 30px;
+    box-sizing:border-box;
 }
 
 /* neon glow */
@@ -25,9 +50,8 @@ body{
     background: rgba(20,25,40,0.55);
     border-radius: 18px;
     padding: 14px;
-    margin: 14px auto;
-    width: 92%;
-    max-width: 420px;
+    margin: 12px 0;
+    width: 100%;
 
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -46,6 +70,7 @@ body{
     border-radius:18px;
     padding:1px;
     background: linear-gradient(120deg,#00ffd5,#00ff9c,#00ffd5);
+
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
@@ -53,6 +78,115 @@ body{
             mask-composite: exclude;
 
     animation: borderRun 3s linear infinite;
+}
+
+@keyframes borderRun{
+    0%{filter:hue-rotate(0deg);}
+    100%{filter:hue-rotate(360deg);}
+}
+
+/* title */
+.title{
+    font-weight:bold;
+    margin-bottom:6px;
+    color:#00ffd5;
+    text-shadow:0 0 10px #00ffd5;
+}
+
+/* buttons FULL WIDTH */
+button{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+
+    border:none;
+    border-radius:10px;
+    background:#00ffd5;
+    color:#000;
+    font-weight:bold;
+
+    box-shadow:0 0 12px #00ffd5;
+
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 8px #00ffd5;}
+    50%{box-shadow:0 0 20px #00ffd5;}
+    100%{box-shadow:0 0 8px #00ffd5;}
+}
+
+/* input FULL WIDTH */
+input{
+    width:100%;
+    box-sizing:border-box;
+
+    padding:12px;
+    font-size:16px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+
+    margin:6px 0;
+
+    background:#111827;
+    color:#fff;
+
+    box-shadow:0 0 8px #00ffd5 inset;
+}
+
+/* heading */
+h2{
+    text-align:center;
+    color:#00ffd5;
+    text-shadow:
+        0 0 10px #00ffd5,
+        0 0 20px #00ffd5,
+        0 0 40px #00ffd5;
+}
+
+/* result colors */
+.tai{
+    color:#00ff9c;
+    text-shadow:0 0 10px #00ff9c;
+}
+.xiu{
+    color:#ff4d4d;
+    text-shadow:0 0 10px #ff4d4d;
+}
+
+/* fade animation */
+.fade{
+    animation:fadeIn 0.4s ease;
+}
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+/* progress bar */
+.bar{
+    height:6px;
+    background:#111;
+    border-radius:5px;
+    overflow:hidden;
+    margin-top:4px;
+}
+
+.fill{
+    height:6px;
+    width:0%;
+    border-radius:5px;
+    transition: width 0.6s ease;
+}
+
+/* nền glow nhẹ */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background: radial-gradient(circle, #00ffd510, transparent 60%);
+    pointer-events:none;
 }
 
 @keyframes borderRun{
@@ -153,6 +287,8 @@ h2{
 </head>
 
 <body>
+
+<div class="app">
 
 <h2 class="neon">🎰 SICBO AI CASINO</h2>
 
