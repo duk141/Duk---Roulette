@@ -17,10 +17,9 @@ html, body{
 body{
     display:flex;
     justify-content:center;
-    align-items:flex-start;
+    align-items:center; /* center thật */
 
-    min-height:100vh
-    
+    min-height:100vh; /* ← FIX dấu ; */
     overflow-x:hidden;
 
     background:
@@ -34,10 +33,12 @@ body{
 
 /* APP WRAPPER */
 .app{
-    margin:auto 0;
     width:100%;
     max-width:480px;
-    min-height:100vh;
+
+    /* ❌ bỏ dòng này */
+    /* min-height:100vh; */
+
     padding:12px 10px 30px;
     box-sizing:border-box;
 }
