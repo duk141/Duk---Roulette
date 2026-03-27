@@ -7,10 +7,11 @@
 <style>
 body{
     margin:0;
-    background: radial-gradient(circle at top, #0f172a, #020617);
+    background:
+        radial-gradient(circle at 30% 20%, #00ffd522, transparent 40%),
+        radial-gradient(circle at 70% 80%, #00ff9c22, transparent 40%),
+        #020617;
     color:#fff;
-    font-family:Arial;
-    text-align:center;
 }
 
 /* neon glow */
@@ -20,21 +21,43 @@ body{
 
 /* glass box */
 .box{
-    background: rgba(255,255,255,0.06);
+    position: relative;
+    background: rgba(20,25,40,0.55);
     border-radius: 18px;
     padding: 14px;
-    margin: 12px auto;
+    margin: 14px auto;
     width: 92%;
     max-width: 420px;
 
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(0,255,200,0.25);
 
     box-shadow:
-        0 0 20px rgba(0,255,200,0.15),
-        inset 0 0 10px rgba(255,255,255,0.05);
+        0 0 25px rgba(0,255,200,0.25),
+        inset 0 0 12px rgba(0,255,200,0.1);
+}
+
+.box::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    padding:1px;
+    background: linear-gradient(120deg,#00ffd5,#00ff9c,#00ffd5);
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+
+    animation: borderRun 3s linear infinite;
+}
+
+@keyframes borderRun{
+    0%{filter:hue-rotate(0deg);}
+    100%{filter:hue-rotate(360deg);}
 }
 
 /* title */
@@ -48,18 +71,21 @@ body{
 /* buttons */
 button{
     padding:10px 14px;
-    margin:5px;
     border:none;
     border-radius:10px;
     background:#00ffd5;
     color:#000;
     font-weight:bold;
-    cursor:pointer;
-    box-shadow:0 0 10px #00ffd5;
-    transition:0.2s;
+
+    box-shadow:0 0 12px #00ffd5;
+
+    animation: pulse 1.5s infinite;
 }
-button:hover{
-    transform:scale(1.05);
+
+@keyframes pulse{
+    0%{box-shadow:0 0 8px #00ffd5;}
+    50%{box-shadow:0 0 20px #00ffd5;}
+    100%{box-shadow:0 0 8px #00ffd5;}
 }
 
 /* input */
@@ -74,6 +100,14 @@ input{
     background:#111827;
     color:#fff;
     box-shadow:0 0 8px #00ffd5 inset;
+}
+
+h2{
+    color:#00ffd5;
+    text-shadow:
+        0 0 10px #00ffd5,
+        0 0 20px #00ffd5,
+        0 0 40px #00ffd5;
 }
 
 /* result colors */
@@ -383,6 +417,12 @@ setTimeout(()=>{
         el.style.width = el.dataset.p + "%";
     });
 },50);
+
+document.querySelectorAll(".box").forEach(b=>{
+    b.classList.remove("fade");
+    void b.offsetWidth;
+    b.classList.add("fade");
+    });
 }
 
 
