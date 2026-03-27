@@ -6,61 +6,108 @@
 
 <style>
 body{
-    background:#0b0f1a;
+    margin:0;
+    background: radial-gradient(circle at top, #0f172a, #020617);
     color:#fff;
     font-family:Arial;
     text-align:center;
 }
-input,button{
-    padding:10px;
-    font-size:18px;
-    margin:5px;
+
+/* neon glow */
+.neon{
+    text-shadow: 0 0 8px #00ffcc, 0 0 16px #00ffcc;
+}
+
+/* glass box */
 .box{
-    background: rgba(255,255,255,0.05);
-    border-radius: 15px;
-    padding: 12px;
-    margin: 10px auto;
-    width: 90%;
-    max-width: 400px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 14px;
+    margin: 12px auto;
+    width: 92%;
+    max-width: 420px;
 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+        0 0 20px rgba(0,255,200,0.15),
+        inset 0 0 10px rgba(255,255,255,0.05);
 }
 
+/* title */
 .title{
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #00ffd5;
+    font-weight:bold;
+    margin-bottom:6px;
+    color:#00ffd5;
+    text-shadow:0 0 10px #00ffd5;
 }
-/* màu kết quả */
+
+/* buttons */
+button{
+    padding:10px 14px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    background:#00ffd5;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 10px #00ffd5;
+    transition:0.2s;
+}
+button:hover{
+    transform:scale(1.05);
+}
+
+/* input */
+input{
+    padding:10px;
+    font-size:16px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    margin:6px;
+    width:260px;
+    background:#111827;
+    color:#fff;
+    box-shadow:0 0 8px #00ffd5 inset;
+}
+
+/* result colors */
 .tai{
     color:#00ff9c;
-    font-weight:bold;
+    text-shadow:0 0 10px #00ff9c;
 }
 .xiu{
     color:#ff4d4d;
-    font-weight:bold;
+    text-shadow:0 0 10px #ff4d4d;
 }
 
-/* animation fade + scale */
+/* fade animation */
 .fade{
-    animation: fadeIn 0.4s ease;
+    animation:fadeIn 0.4s ease;
 }
 @keyframes fadeIn{
-    from{opacity:0; transform:scale(0.95);}
-    to{opacity:1; transform:scale(1);}
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
 }
 
 /* progress bar */
 .bar{
     height:6px;
-    background:#222;
+    background:#111;
     border-radius:5px;
     overflow:hidden;
     margin-top:3px;
+}
+.fill{
+    height:6px;
+    width:0%;
+    border-radius:5px;
+    transition: width 0.6s ease;
 }
 .fill{
     height:6px;
@@ -73,14 +120,14 @@ input,button{
 
 <body>
 
-<h2>SICBO AI LEARNING</h2>
+<h2 class="neon">🎰 SICBO AI CASINO</h2>
 
-<input id="md5" placeholder="MD5 32 ký tự">
+<input id="md5" placeholder="Nhập MD5...">
 <br>
 <button onclick="predict()">Dự đoán</button>
 <br>
-<button onclick="train('tai')">Kết quả TÀI</button>
-<button onclick="train('xiu')">Kết quả XỈU</button>
+<button onclick="train('tai')">TÀI</button>
+<button onclick="train('xiu')">XỈU</button>
 
 <div class="box">
     <div class="title">📊 Predict</div>
@@ -98,7 +145,7 @@ input,button{
 </div>
 
 <div class="box">
-    <div class="title">📈 Xác suất (%)</div>
+    <div class="title">📈 Xác suất</div>
     <div id="prob"></div>
 </div>
 
@@ -190,11 +237,11 @@ function predict(){
     let cls = (result === "tai") ? "tai" : "xiu";
 
 document.getElementById("out").innerHTML =
-    "<span class='fade " + cls + "'>" +
-    "Predict: " + result.toUpperCase() +
-    "</span><br>" +
-    "Tai=" + tai.toFixed(2) +
-    " | Xiu=" + xiu.toFixed(2);
+    "<div class='fade "+cls+"'>" +
+    "🎯 " + result.toUpperCase() +
+    "</div>" +
+    "<small>Tai=" + tai.toFixed(2) +
+    " | Xiu=" + xiu.toFixed(2) + "</small>";
 
     // ===== SUM FREQ =====
     let sumFreq = {};
@@ -308,7 +355,7 @@ let html = "";
 
 probArr.forEach((x,i)=>{
 
-    let color = "#999";
+    let color = "#888";
     let icon = "";
 
     if(i === 0){
@@ -330,11 +377,12 @@ probArr.forEach((x,i)=>{
 });
 
 document.getElementById("prob").innerHTML = html;
+
 setTimeout(()=>{
     document.querySelectorAll(".fill").forEach(el=>{
         el.style.width = el.dataset.p + "%";
     });
-}, 50);
+},50);
 }
 
 
