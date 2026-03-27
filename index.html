@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -32,6 +32,13 @@ input,button{
 
 <div id="out"></div>
 
+Dự đoán tổng: <span id="sum3">--</span><br>
+
+Xúc xắc: <span id="dice3">--</span><br>
+
+Xác suất tổng (%):<br>
+<div id="prob"></div>
+
 <script>
 
 // ===== Load =====
@@ -46,6 +53,7 @@ let model = {
 
 let lastFeatures = null;
 let lastPrediction = null;
+let trend = 0;
 
 // ===== Extract =====
 function extract(md5){
@@ -76,7 +84,21 @@ function predict(){
         return;
     }
 
-    let f = extract(md5);
+    // ===== build nums =====
+    let nums = [];
+    for(let i=0;i<md5.length;i+=2){
+        let n = parseInt(md5.substr(i,2),16);
+        nums.push(n % 6 + 1);
+    }
+
+    // ===== feature =====
+    let sum3 = nums[0] + nums[1] + nums[2];
+
+    let f = {
+        even: (sum3 % 2 === 0),
+        high: (sum3 >= 11),
+        lastBias: parseInt(md5[31],16) % 2
+    };
 
     let tai = 0;
     let xiu = 0;
@@ -89,7 +111,12 @@ function predict(){
 
     if(f.lastBias === 0) tai += model.lastBias;
     else xiu += model.lastBias;
+    
+    // ===== apply trend =====
+    let t = Math.max(-3, Math.min(3, trend));
 
+    if(t > 0) tai += t * 0.2;
+    if(t < 0) xiu += Math.abs(t) * 0.2;
     let result = (tai > xiu) ? "tai" : "xiu";
 
     lastFeatures = f;
@@ -99,12 +126,106 @@ function predict(){
         "Predict: " + result.toUpperCase() +
         " | Tai=" + tai.toFixed(2) +
         " Xiu=" + xiu.toFixed(2);
+
+    // ===== SUM FREQ =====
+    let sumFreq = {};
+    for(let i=4;i<=17;i++) sumFreq[i] = 0;
+
+    for(let i=0;i<nums.length-2;i++){
+    let s = nums[i] + nums[i+1] + nums[i+2];
+
+    if(s >= 4 && s <= 17 && s !== 3 && s !== 18){
+        sumFreq[s]++;
+    }
+}
+
+    // ===== APPLY WEIGHT =====
+    for(let s=4;s<=17;s++){
+        let isTai = (s >= 11);
+
+        if(isTai){
+            sumFreq[s] *= (model.high + model.even)/2;
+        }else{
+            sumFreq[s] *= (model.low + model.odd)/2;
+        }
+    }
+
+    // ===== TOP 3 SUM =====
+    let topSum = Object.keys(sumFreq)
+        .map(n => ({sum:parseInt(n), val:sumFreq[n]}))
+        .sort((a,b)=>b.val-a.val)
+        .slice(0,3)
+        .map(x=>x.sum);
+
+    document.getElementById("sum3").innerHTML =
+        topSum.join(" - ");
+
+    // ===== DICE =====
+    let diceFreq = [0,0,0,0,0,0];
+
+    for(let i=1;i<=6;i++){
+    diceFreq[i-1] = 0;
+
+    for(let j=0;j<nums.length;j++){
+        if(nums[j] === i) diceFreq[i-1]++;
+    }
+}
+
+    for(let i=0;i<6;i++){
+        if(i+1 >= 4) diceFreq[i] *= model.high;
+        else diceFreq[i] *= model.low;
+    }
+
+    let diceTop = diceFreq
+        .map((v,i)=>({num:i+1,val:v}))
+        .sort((a,b)=>b.val-a.val)
+        .slice(0,3)
+        .map(x=>x.num);
+
+    document.getElementById("dice3").innerHTML =
+        diceTop.join(" - ");
+
+    // ===== PROBABILITY =====
+    let total = 0;
+    for(let s in sumFreq){
+        total += sumFreq[s];
+    }
+
+    let probArr = [];
+
+    for(let s=4;s<=17;s++){
+        let val = sumFreq[s];
+        let percent = total ? (val / total * 100) : 0;
+
+        probArr.push({
+            sum: s,
+            p: percent
+        });
+    }
+    
+
+probArr.sort((a,b)=>b.p-a.p);
+
+let best = probArr[0];
+
+if(best.p < 14){
+    document.getElementById("out").innerHTML +=
+        "<br>⚠️ Kèo yếu - bỏ qua";
+}
+
+let html = "";
+
+probArr.forEach((x,i)=>{
+    if(i === 0) html += "🔥 ";
+    html += "Tổng " + x.sum + ": " + x.p.toFixed(1) + "%<br>";
+});
+
+document.getElementById("prob").innerHTML = html;
 }
 
 // ===== Re-train từ history =====
 function rebuildModel(){
 
-    // reset model
     model = {
         even: 1,
         odd: 1,
@@ -113,7 +234,7 @@ function rebuildModel(){
         lastBias: 1
     };
 
-    let lr = 0.3;
+    let lr = 0.2 + history.length * 0.05;
 
     history.forEach(item => {
 
@@ -129,11 +250,7 @@ function rebuildModel(){
         if(f.high) tai += model.high;
         else xiu += model.low;
 
-        if(f.lastBias === 0) tai += model.lastBias;
-        else xiu += model.lastBias;
-
         let pred = (tai > xiu) ? "tai" : "xiu";
-
         let correct = (pred === real);
 
         function update(cond, key){
@@ -148,12 +265,24 @@ function rebuildModel(){
         update(f.high, "high");
         update(!f.high, "low");
 
-        // giữ weight dương
         for(let k in model){
             if(model[k] < 0.1) model[k] = 0.1;
         }
-
     });
+
+    // ===== trend =====
+    trend = 0;
+    history.forEach(h=>{
+        if(h.real === "tai") trend++;
+        else trend--;
+    });
+
+    // ===== normalize =====
+    let sumW = model.even + model.odd + model.high + model.low;
+
+    for(let k in model){
+        model[k] = model[k] / sumW * 4;
+    }
 }
 
 // ===== Train =====
