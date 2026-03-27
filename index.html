@@ -15,6 +15,58 @@ input,button{
     padding:10px;
     font-size:18px;
     margin:5px;
+.box{
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    padding: 12px;
+    margin: 10px auto;
+    width: 90%;
+    max-width: 400px;
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.title{
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #00ffd5;
+}
+/* màu kết quả */
+.tai{
+    color:#00ff9c;
+    font-weight:bold;
+}
+.xiu{
+    color:#ff4d4d;
+    font-weight:bold;
+}
+
+/* animation fade + scale */
+.fade{
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn{
+    from{opacity:0; transform:scale(0.95);}
+    to{opacity:1; transform:scale(1);}
+}
+
+/* progress bar */
+.bar{
+    height:6px;
+    background:#222;
+    border-radius:5px;
+    overflow:hidden;
+    margin-top:3px;
+}
+.fill{
+    height:6px;
+    width:0%;
+    border-radius:5px;
+    transition: width 0.6s ease;
 }
 </style>
 </head>
@@ -30,14 +82,25 @@ input,button{
 <button onclick="train('tai')">Kết quả TÀI</button>
 <button onclick="train('xiu')">Kết quả XỈU</button>
 
-<div id="out"></div>
+<div class="box">
+    <div class="title">📊 Predict</div>
+    <div id="out"></div>
+</div>
 
-Dự đoán tổng: <span id="sum3">--</span><br>
+<div class="box">
+    <div class="title">🎯 Top Tổng</div>
+    <span id="sum3">--</span>
+</div>
 
-Xúc xắc: <span id="dice3">--</span><br>
+<div class="box">
+    <div class="title">🎲 Xúc xắc</div>
+    <span id="dice3">--</span>
+</div>
 
-Xác suất tổng (%):<br>
-<div id="prob"></div>
+<div class="box">
+    <div class="title">📈 Xác suất (%)</div>
+    <div id="prob"></div>
+</div>
 
 <script>
 
@@ -109,8 +172,10 @@ function predict(){
     if(f.high) tai += model.high;
     else xiu += model.low;
 
+    if(model.lastBias > 0.8){
     if(f.lastBias === 0) tai += model.lastBias;
     else xiu += model.lastBias;
+}
     
     // ===== apply trend =====
     let t = Math.max(-3, Math.min(3, trend));
@@ -122,10 +187,14 @@ function predict(){
     lastFeatures = f;
     lastPrediction = result;
 
-    document.getElementById("out").innerHTML =
-        "Predict: " + result.toUpperCase() +
-        " | Tai=" + tai.toFixed(2) +
-        " Xiu=" + xiu.toFixed(2);
+    let cls = (result === "tai") ? "tai" : "xiu";
+
+document.getElementById("out").innerHTML =
+    "<span class='fade " + cls + "'>" +
+    "Predict: " + result.toUpperCase() +
+    "</span><br>" +
+    "Tai=" + tai.toFixed(2) +
+    " | Xiu=" + xiu.toFixed(2);
 
     // ===== SUM FREQ =====
     let sumFreq = {};
@@ -199,20 +268,31 @@ document.getElementById("dice3").innerHTML =
 
     // ===== PROBABILITY =====
     let total = 0;
-    for(let s in sumFreq){
-        total += sumFreq[s];
-    }
+
+for(let s=4;s<=17;s++){
+
+    if(result === "tai" && s < 11) continue;
+    if(result === "xiu" && s > 10) continue;
+
+    total += sumFreq[s];
+}
 
     let probArr = [];
 
     for(let s=4;s<=17;s++){
-        let val = sumFreq[s];
-        let percent = total ? ((val + 1) / (total + 14) * 100) : 0;
-        probArr.push({
-            sum: s,
-            p: percent
-        });
-    }
+
+    // 👉 lọc theo kết quả dự đoán
+    if(result === "tai" && s < 11) continue;
+    if(result === "xiu" && s > 10) continue;
+
+    let val = sumFreq[s];
+    let percent = total ? ((val + 1) / (total + 14) * 100) : 0;
+
+    probArr.push({
+        sum: s,
+        p: percent
+    });
+}
     
 
 probArr.sort((a,b)=>b.p-a.p);
@@ -227,12 +307,36 @@ if(best.p < 14){
 let html = "";
 
 probArr.forEach((x,i)=>{
-    if(i === 0) html += "🔥 ";
-    html += "Tổng " + x.sum + ": " + x.p.toFixed(1) + "%<br>";
+
+    let color = "#999";
+    let icon = "";
+
+    if(i === 0){
+        icon = "🔥 ";
+        color = "#00ff9c";
+    }else if(i < 3){
+        icon = "⭐ ";
+        color = "#ffd700";
+    }
+
+    html += `
+    <div style="margin:6px 0">
+        ${icon}Tổng ${x.sum}: ${x.p.toFixed(1)}%
+        <div class="bar">
+            <div class="fill" style="background:${color}" data-p="${x.p}"></div>
+        </div>
+    </div>
+    `;
 });
 
 document.getElementById("prob").innerHTML = html;
+setTimeout(()=>{
+    document.querySelectorAll(".fill").forEach(el=>{
+        el.style.width = el.dataset.p + "%";
+    });
+}, 50);
 }
+
 
 // ===== Re-train từ history =====
 function rebuildModel(){
@@ -328,7 +432,7 @@ function train(real){
     pred: lastPrediction
 });
 
-if(history.length > 5){
+if(history.length > 10){
     history.shift();
 }
 
