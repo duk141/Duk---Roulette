@@ -19,7 +19,9 @@ body{
     justify-content:center;
     align-items:flex-start;
 
-    min-height:100vh;
+    min-height:100vh
+    
+    overflow-x:hidden;
 
     background:
         radial-gradient(circle at 30% 20%, #00ffd522, transparent 40%),
@@ -83,101 +85,6 @@ body{
 @keyframes borderRun{
     0%{filter:hue-rotate(0deg);}
     100%{filter:hue-rotate(360deg);}
-}
-
-/* title */
-.title{
-    font-weight:bold;
-    margin-bottom:6px;
-    color:#00ffd5;
-    text-shadow:0 0 10px #00ffd5;
-}
-
-/* buttons FULL WIDTH */
-button{
-    width:100%;
-    padding:12px;
-    margin-top:8px;
-
-    border:none;
-    border-radius:10px;
-    background:#00ffd5;
-    color:#000;
-    font-weight:bold;
-
-    box-shadow:0 0 12px #00ffd5;
-
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-    0%{box-shadow:0 0 8px #00ffd5;}
-    50%{box-shadow:0 0 20px #00ffd5;}
-    100%{box-shadow:0 0 8px #00ffd5;}
-}
-
-/* input FULL WIDTH */
-input{
-    width:100%;
-    box-sizing:border-box;
-
-    padding:12px;
-    font-size:16px;
-    border-radius:10px;
-    border:none;
-    outline:none;
-
-    margin:6px 0;
-
-    background:#111827;
-    color:#fff;
-
-    box-shadow:0 0 8px #00ffd5 inset;
-}
-
-/* heading */
-h2{
-    text-align:center;
-    color:#00ffd5;
-    text-shadow:
-        0 0 10px #00ffd5,
-        0 0 20px #00ffd5,
-        0 0 40px #00ffd5;
-}
-
-/* result colors */
-.tai{
-    color:#00ff9c;
-    text-shadow:0 0 10px #00ff9c;
-}
-.xiu{
-    color:#ff4d4d;
-    text-shadow:0 0 10px #ff4d4d;
-}
-
-/* fade animation */
-.fade{
-    animation:fadeIn 0.4s ease;
-}
-@keyframes fadeIn{
-    from{opacity:0; transform:translateY(10px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-/* progress bar */
-.bar{
-    height:6px;
-    background:#111;
-    border-radius:5px;
-    overflow:hidden;
-    margin-top:4px;
-}
-
-.fill{
-    height:6px;
-    width:0%;
-    border-radius:5px;
-    transition: width 0.6s ease;
 }
 
 /* nền glow nhẹ */
@@ -283,6 +190,26 @@ h2{
     border-radius:5px;
     transition: width 0.6s ease;
 }
+.row{
+    display:flex;
+    gap:10px;
+}
+
+.row button{
+    flex:1;
+}
+#out{
+    margin-top:6px;
+    text-align:center;
+    font-size:18px;
+}
+
+#sum3, #dice3{
+    font-size:18px;
+    display:block;
+    text-align:center;
+    margin-top:6px;
+}
 </style>
 </head>
 
@@ -296,9 +223,10 @@ h2{
 <br>
 <button onclick="predict()">Dự đoán</button>
 <br>
-<button onclick="train('tai')">TÀI</button>
-<button onclick="train('xiu')">XỈU</button>
-
+<div class="row">
+    <button onclick="train('tai')">TÀI</button>
+    <button onclick="train('xiu')">XỈU</button>
+</div>
 <div class="box">
     <div class="title">📊 Predict</div>
     <div id="out"></div>
@@ -478,7 +406,7 @@ for(let j = nums.length - 6; j < nums.length; j++){
         .slice(0,3)
         .map(x=>x.num);
 
-let dice = generateDiceFromSum(topSum[0]);
+let dice = generateDiceFromSum(topSum[0] || 11);
 
 document.getElementById("dice3").innerHTML =
     dice.join(" - ");
@@ -548,7 +476,7 @@ probArr.forEach((x,i)=>{
 
 document.getElementById("prob").innerHTML = html;
 
-setTimeout(()=>{
+requestAnimationFrame(()=>{
     document.querySelectorAll(".fill").forEach(el=>{
         el.style.width = el.dataset.p + "%";
     });
