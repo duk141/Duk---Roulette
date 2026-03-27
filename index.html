@@ -6,25 +6,20 @@
 <title>Sicbo AI Learning</title>
 
 <style>
-/* RESET */
-*{
+html, body{
     margin:0;
     padding:0;
-    box-sizing:border-box;
-}
-
-html, body{
     width:100%;
     height:100%;
 }
 
-/* BODY */
+/* BODY FULL SCREEN */
 body{
     display:flex;
     justify-content:center;
-    align-items:center;
+    align-items:center; /* center thật */
 
-    min-height:100vh;
+    min-height:100vh; /* ← FIX dấu ; */
     overflow-x:hidden;
 
     background:
@@ -36,110 +31,36 @@ body{
     font-family:sans-serif;
 }
 
-/* APP */
+/* APP WRAPPER */
 .app{
     width:100%;
     max-width:480px;
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-}
-
-/* CONTAINER */
-.container{
-    width:100%;
-    padding:0 12px;
+    padding:12px 0 30px; /* ❗ bỏ padding ngang */
 
     display:flex;
     flex-direction:column;
     align-items:center;
 }
 
-/* TITLE */
-h2{
-    margin-bottom:12px;
-    text-align:center;
-
-    color:#00ffd5;
-    text-shadow:
-        0 0 10px #00ffd5,
-        0 0 20px #00ffd5,
-        0 0 40px #00ffd5;
-}
-
+/* neon glow */
 .neon{
-    text-shadow:0 0 8px #00ffcc, 0 0 16px #00ffcc;
+    text-shadow: 0 0 8px #00ffcc, 0 0 16px #00ffcc;
 }
 
-/* INPUT */
-input{
-    width:100%;
-    padding:12px;
-    margin-bottom:10px;
-
-    border:none;
-    border-radius:10px;
-    outline:none;
-
-    background:#111827;
-    color:#fff;
-
-    box-shadow:0 0 8px #00ffd5 inset;
-}
-
-/* BUTTON */
-button{
-    width:100%;
-    padding:12px;
-    margin-bottom:10px;
-
-    border:none;
-    border-radius:10px;
-
-    background:#00ffd5;
-    color:#000;
-    font-weight:bold;
-
-    box-shadow:0 0 12px #00ffd5;
-    animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-    0%{box-shadow:0 0 8px #00ffd5;}
-    50%{box-shadow:0 0 20px #00ffd5;}
-    100%{box-shadow:0 0 8px #00ffd5;}
-}
-
-/* ROW */
-.row{
-    display:flex;
-    gap:10px;
-    width:100%;
-    margin-bottom:10px;
-}
-
-.row button{
-    flex:1;
-    margin-bottom:0;
-}
-
-/* BOX */
+/* glass box */
 .box{
-    position:relative;
+    position: relative;
+    background: rgba(20,25,40,0.55);
+    border-radius: 18px;
+    padding: 14px;
+    margin: 12px 0;
+    width: 100%;
 
-    width:100%;
-    margin:10px 0;
-    padding:14px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 
-    border-radius:18px;
-
-    background:rgba(20,25,40,0.55);
-
-    backdrop-filter:blur(18px);
-    -webkit-backdrop-filter:blur(18px);
-
-    border:1px solid rgba(0,255,200,0.25);
+    border: 1px solid rgba(0,255,200,0.25);
 
     box-shadow:
         0 0 25px rgba(0,255,200,0.25),
@@ -150,19 +71,17 @@ button{
     content:"";
     position:absolute;
     inset:0;
-
     border-radius:18px;
     padding:1px;
-
-    background:linear-gradient(120deg,#00ffd5,#00ff9c,#00ffd5);
+    background: linear-gradient(120deg,#00ffd5,#00ff9c,#00ffd5);
 
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor;
-    mask-composite:exclude;
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
 
-    animation:borderRun 3s linear infinite;
+    animation: borderRun 3s linear infinite;
 }
 
 @keyframes borderRun{
@@ -170,76 +89,135 @@ button{
     100%{filter:hue-rotate(360deg);}
 }
 
-/* TITLE BOX */
-.title{
-    margin-bottom:6px;
-    font-weight:bold;
+/* nền glow nhẹ */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background: radial-gradient(circle, #00ffd510, transparent 60%);
+    pointer-events:none;
+}
 
+@keyframes borderRun{
+    0%{filter:hue-rotate(0deg);}
+    100%{filter:hue-rotate(360deg);}
+}
+
+/* title */
+.title{
+    font-weight:bold;
+    margin-bottom:6px;
     color:#00ffd5;
     text-shadow:0 0 10px #00ffd5;
 }
 
-/* RESULT */
-#out{
-    text-align:center;
-    font-size:18px;
-    margin-top:6px;
+/* buttons */
+button{
+    padding:10px 14px;
+    border:none;
+    border-radius:10px;
+    background:#00ffd5;
+    color:#000;
+    font-weight:bold;
+    width:100%;
+
+    box-shadow:0 0 12px #00ffd5;
+
+    animation: pulse 1.5s infinite;
 }
 
-#sum3, #dice3{
-    display:block;
-    text-align:center;
-    margin-top:6px;
-    font-size:18px;
+@keyframes pulse{
+    0%{box-shadow:0 0 8px #00ffd5;}
+    50%{box-shadow:0 0 20px #00ffd5;}
+    100%{box-shadow:0 0 8px #00ffd5;}
 }
 
-/* COLORS */
+/* input */
+input{
+    padding:10px;
+    font-size:16px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+
+    margin:6px auto;   /* ✅ sửa */
+    display:block;     /* ✅ thêm */
+    width:100%;        /* ✅ full width */
+
+    background:#111827;
+    color:#fff;
+    box-shadow:0 0 8px #00ffd5 inset;
+}
+
+h2{
+    color:#00ffd5;
+    text-shadow:
+        0 0 10px #00ffd5,
+        0 0 20px #00ffd5,
+        0 0 40px #00ffd5;
+}
+
+/* result colors */
 .tai{
     color:#00ff9c;
     text-shadow:0 0 10px #00ff9c;
 }
-
 .xiu{
     color:#ff4d4d;
     text-shadow:0 0 10px #ff4d4d;
 }
 
-/* FADE */
+/* fade animation */
 .fade{
     animation:fadeIn 0.4s ease;
 }
-
 @keyframes fadeIn{
     from{opacity:0; transform:translateY(10px);}
     to{opacity:1; transform:translateY(0);}
 }
 
-/* PROGRESS */
+/* progress bar */
 .bar{
     height:6px;
-    margin-top:4px;
-
     background:#111;
     border-radius:5px;
     overflow:hidden;
+    margin-top:3px;
 }
-
 .fill{
-    height:100%;
+    height:6px;
     width:0%;
     border-radius:5px;
-
-    transition:width 0.6s ease;
+    transition: width 0.6s ease;
+}
+.row{
+    display:flex;
+    gap:10px;
 }
 
-/* BACKGROUND GLOW */
-body::before{
-    content:"";
-    position:fixed;
-    inset:0;
+.row button{
+    flex:1;
+}
+#out{
+    margin-top:6px;
+    text-align:center;
+    font-size:18px;
+}
 
-    background:radial-gradient(circle, #00ffd510, transparent 60%);
-    pointer-events:none;
+#sum3, #dice3{
+    font-size:18px;
+    display:block;
+    text-align:center;
+    margin-top:6px;
+}
+.container{
+    width:100%;
+    padding:0 10px;   /* giữ spacing nhưng không lệch */
+    box-sizing:border-box;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
 }
 </style>
 </head>
@@ -252,22 +230,17 @@ body::before{
 
 <div class="container">
 
-    <input id="md5" placeholder="Nhập MD5...">
+<input id="md5" placeholder="Nhập MD5...">
+<button onclick="predict()">Dự đoán</button>
 
-    <button onclick="predict()">Dự đoán</button>
-
-    <div class="row">
-        <button onclick="train('tai')">TÀI</button>
-        <button onclick="train('xiu')">XỈU</button>
-    </div>
-
-    <div class="box">...</div>
-    <div class="box">...</div>
-    <div class="box">...</div>
-    <div class="box">...</div>
-
+<div class="row">
+    <button onclick="train('tai')">TÀI</button>
+    <button onclick="train('xiu')">XỈU</button>
 </div>
 
+<div class="box">
+    <div class="title">📊 Predict</div>
+    <div id="out"></div>
 </div>
 
 <div class="box">
