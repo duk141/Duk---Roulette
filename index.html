@@ -35,9 +35,12 @@ body{
 .app{
     width:100%;
     max-width:480px;
+    padding:12px 10px 30px;
+    box-sizing:border-box;
 
-    /* ❌ bỏ dòng này */
-    /* min-height:100vh; */
+    display:flex;              /* ✅ thêm */
+    flex-direction:column;     /* ✅ thêm */
+    align-items:center;        /* ✅ thêm */
 
     padding:12px 10px 30px;
     box-sizing:border-box;
@@ -119,6 +122,7 @@ button{
     background:#00ffd5;
     color:#000;
     font-weight:bold;
+    width:100%;
 
     box-shadow:0 0 12px #00ffd5;
 
@@ -138,8 +142,11 @@ input{
     border-radius:10px;
     border:none;
     outline:none;
-    margin:6px;
-    width:260px;
+
+    margin:6px auto;   /* ✅ sửa */
+    display:block;     /* ✅ thêm */
+    width:100%;        /* ✅ full width */
+
     background:#111827;
     color:#fff;
     box-shadow:0 0 8px #00ffd5 inset;
@@ -222,9 +229,7 @@ h2{
 <h2 class="neon">🎰 SICBO AI CASINO</h2>
 
 <input id="md5" placeholder="Nhập MD5...">
-<br>
 <button onclick="predict()">Dự đoán</button>
-<br>
 <div class="row">
     <button onclick="train('tai')">TÀI</button>
     <button onclick="train('xiu')">XỈU</button>
